@@ -50,3 +50,17 @@ def body_param(body: Optional[str] = Query(None, description="Body parameters as
     return body
 
 
+#given comman separated list convert to list
+def examination_ids_param(examination_ids: Optional[str] = Query(None, description="Comma separated list of examination ids")):
+    try:
+        if examination_ids is not None:
+            examination_ids = examination_ids.split(",") if "," in examination_ids else [examination_ids]
+        return examination_ids
+    except Exception as e:
+        return None
+
+def championship_id_param(championship_id: Optional[int] = Query(None, description="Championship id")):
+    try:
+        return championship_id
+    except Exception as e:
+        return None

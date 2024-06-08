@@ -33,8 +33,6 @@ class SessionDB(Database):
       def __init__(self) -> None:
             super().__init__()
 
-            print("*"*100, "session creation")
-
 
             self.engine = create_engine(self.SQLALCHEMY_DATABASE_URL,
                                       pool_size=1000,

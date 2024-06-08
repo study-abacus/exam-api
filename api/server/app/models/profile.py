@@ -1,3 +1,4 @@
+
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean ,  Float, Text
 
 from typing import Any
@@ -9,6 +10,15 @@ class Profile(Base):
     name = Column(String(100))
     mothers_name = Column(String(100))
     fathers_name =  Column(String(100))
+    email = Column(String(100), nullable = True)
+    phone = Column(String(100))
+    dob = Column(String(100), nullable = True)
+    address = Column(String(100) , nullable = True)
+    city = Column(String(100), nullable = True)
+    state = Column(String(100), nullable = True)
+    pincode = Column(String(100), nullable = True)
+    country = Column(String(100), nullable = True)
+
 
 
     def __init__(self, **kwargs) -> None: 

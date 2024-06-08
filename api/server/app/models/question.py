@@ -6,7 +6,7 @@ from db.base_class import Base
 
 class Question(Base):
     id = Column(Integer, primary_key = True, nullable = True)
-    type = Column(String(100))
+    questype = Column(String(100))
     title = Column(Text)
     description = Column(Text)
     examination_id = Base.foreign_key(Integer, "id", "Examination")
