@@ -6,7 +6,7 @@ class AdmitCardBase(BaseModel):
 
     schema_extra: ClassVar = {
         "example": {
-            "order_id": 1
+            "order_id": "NA"
         }
     }
 
