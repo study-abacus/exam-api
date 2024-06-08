@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+  examination:
+    build: ./api
+    ports:
+      - 8001:8001
+    volumes:
+      - ./api/server:/app
+    env_file:
+      - api/app_env/.env.dev
+
+  postgres:
+    image: postgres:14-alpine
+    command: ["postgres", "-c", "log_statement=all"]
+    restart: always
+    environment:
+      - POSTGRES_USER=private
+      - POSTGRES_PASSWORD=private
+      - POSTGRES_DB=private
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"  
+        max-file: "3"    
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+
+volumes:
+    db:
+      driver: local
