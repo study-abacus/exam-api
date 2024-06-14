@@ -3,6 +3,7 @@ from typing import Optional, Generator
 
 
 from db.session import SessionDB
+from db.redis import Redis
 
 
 import json
@@ -19,6 +20,16 @@ def get_session() -> Generator:
     finally:
         db_session.close()
 
+
+def get_cache() -> Generator:
+    cache = Redis()
+    cache_client = cache.client
+    if cache_client is None:
+        raise ValueError("Cache client is not set. Please check the configuration.")
+    try:
+        yield cache_client
+    finally:
+        cache_client.close()
 
 
 
@@ -62,5 +73,15 @@ def examination_ids_param(examination_ids: Optional[str] = Query(None, descripti
 def championship_id_param(championship_id: Optional[int] = Query(None, description="Championship id")):
     try:
         return championship_id
+    except Exception as e:
+        return None
+    
+def get_order(championship_id: int , examination_ids: str = Query(None, description="Comma separated list of examination ids")):
+    try:
+        order = {
+            "championship_id": championship_id,
+            "examination_ids": examination_ids.split(",") if "," in examination_ids else [examination_ids]
+        }
+        return order
     except Exception as e:
         return None

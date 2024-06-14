@@ -87,6 +87,34 @@ class ProfileCRUD(AppCRUD):
         except Exception as e:
             logger.error(f'Error retrieving profiles: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving profiles: {str(e)}"})
+        
+    async def create_inital_profile(self):
+        """
+        Create initial profile.
+        """
+        try:
+            new_profile = ProfileModel(
+                first_name = "",
+                last_name = "",
+                email = "",
+                phone = "",
+                address = "",
+                city = "",
+                state = "",
+                country = "",
+                zip_code = "",
+                created_at = datetime.datetime.now(),
+                updated_at = datetime.datetime.now()
+            )
+            self.db.add(new_profile)
+            self.db.commit()
+            self.db.refresh(new_profile)
+
+            return new_profile
+        except Exception as e:
+            logger.error(f'Error creating initial profile: {str(e)}')
+            return AppException.RequestCreateItem( {"ERROR": f"Error creating initial profile: {str(e)}"})
+
 
     async def create(self, model: ProfileModel, profile: ProfileSchema) -> ProfileModel:
         """

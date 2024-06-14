@@ -3,21 +3,20 @@ from typing import List, Any , Optional, Union, ClassVar
 
 class AdmitCardBase(BaseModel):
     order_id: str
+    password : Optional[str]
+    examination_ids : List[int]
+    championship_id : int
+    
 
-    schema_extra: ClassVar = {
-        "example": {
-            "order_id": "NA"
-        }
-    }
 
+    
 class AdmitCardCreate(AdmitCardBase):
     pass
 
 class AdmitCard(AdmitCardBase):
     id: int
-    examination_ids : List[int]
-    profile_id : int
-    championship_id : int
+    profile_id: int
+    
 
     class Config:
         orm_mode = True

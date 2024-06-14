@@ -72,12 +72,12 @@ class ExaminationService(AppService):
             logger.error(f'Error deleting examination: {str(e)}')
             return ServiceResult(AppException.RequestDeleteItem( {"ERROR": f"Error deleting examination: {str(e)}"}))
 
-    async def get_championship_examinations(self, championship_id: int) -> ServiceResult:
+    async def get_championship_examinations(self, championship_id: int,  skip: int = 0, limit: int = 100) -> ServiceResult:
         """
         Retrieve examinations for championship.
         """
         try:
-            result = await ExaminationCRUD(self.db).get_all(ExaminationModel, filters=[ExaminationModel.championship_id == championship_id])
+            result = await ExaminationCRUD(self.db).get_all(ExaminationModel,  skip, limit,filters=[ExaminationModel.championship_id == championship_id])
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving championship examinations: {str(e)}')

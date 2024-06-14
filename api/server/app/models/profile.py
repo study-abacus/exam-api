@@ -7,19 +7,11 @@ from db.base_class import Base
 
 class Profile(Base):
     id = Column(Integer, primary_key = True, nullable = True)
-    name = Column(String(100))
-    mothers_name = Column(String(100))
-    fathers_name =  Column(String(100))
+    name = Column(String(100),  nullable = True)
+    ci = Column(String(100), nullable = True)
+    guardian_name = Column(String(100), nullable = True)
     email = Column(String(100), nullable = True)
-    phone = Column(String(100))
-    dob = Column(String(100), nullable = True)
-    address = Column(String(100) , nullable = True)
-    city = Column(String(100), nullable = True)
-    state = Column(String(100), nullable = True)
-    pincode = Column(String(100), nullable = True)
-    country = Column(String(100), nullable = True)
-
-
+    phone = Column(String(100), nullable = True)
 
     def __init__(self, **kwargs) -> None: 
         super().__dict__.update(kwargs)

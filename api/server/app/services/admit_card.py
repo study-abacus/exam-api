@@ -4,7 +4,10 @@ from services.main import AppService, AppCRUD
 from utils.service_request import ServiceResult
 
 from models.admit_card import AdmitCard as AdmitCardModel
-from schemas.admit_card import AdmitCard as AdmitCardSchema
+from schemas.admit_card import(
+    AdmitCardCreate as AdmitCardCreateSchema,
+    AdmitCard as AdmitCardSchema
+)
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
@@ -28,7 +31,7 @@ class AdmitCardService(AppService):
             logger.error(f'Error retrieving admit_cards: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_cards: {str(e)}"}))
 
-    async def create_admit_card(self, profile_id: int, championship_id: int, examination_ids: List[int], admit_card: AdmitCardSchema) -> ServiceResult:
+    async def create_admit_card(self, profile_id: int, championship_id: int, examination_ids: List[int], admit_card: AdmitCardCreateSchema) -> ServiceResult:
         """
         Create new admit_card.
         """
@@ -164,12 +167,12 @@ class AdmitCardCRUD(AppCRUD):
             logger.error(f'Error retrieving items: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving items: {str(e)}"})
 
-    async def create(self, model, profile_id: int, championship_id: int, examination_ids: List[int], item: dict) -> ServiceResult:
+    async def create(self, profile_id: int, championship_id: int, examination_ids: List[int], item: dict) -> ServiceResult:
         """
         Create new item.
         """
         try:
-            item = model(**item.dict(), profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
+            item = AdmitCardModel(**item.dict(), profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
             self.db.add(item)
             self.db.commit()
             self.db.refresh(item)

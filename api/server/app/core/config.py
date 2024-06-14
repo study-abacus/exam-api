@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
+    ADMIN_STR: str = "/api/admin"
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:3000", "http://localhost:8001","http://*", "https://*"]
 
 

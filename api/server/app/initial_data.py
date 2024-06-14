@@ -8,8 +8,6 @@ from db.session import SessionDB
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Enable SQLAlchemy logging
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 

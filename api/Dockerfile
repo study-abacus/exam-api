@@ -23,6 +23,7 @@ RUN curl -sSLk https://install.python-poetry.org | POETRY_HOME=/opt/poetry pytho
 COPY ./server/pyproject.toml ./server/poetry.lock* /app/
 
 RUN poetry add requests
+RUN poetry add redis , hmac , hashlib
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false

@@ -80,6 +80,7 @@ class ChampionshipCRUD(AppCRUD):
         Retrieve all records.
         """
         try:
+            # Get all records
             result =  self.db.query(model).offset(skip).limit(limit).all()
             return result
         except Exception as e:
