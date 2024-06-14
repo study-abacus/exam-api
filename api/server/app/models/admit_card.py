@@ -9,6 +9,7 @@ class AdmitCard(Base):
     id = Column(Integer, primary_key = True, nullable = True)
     order_id = Column(Text)
     examination_ids = Column(ARRAY(Integer))
+    password_hash = Column(String(100))
     profile_id = Base.foreign_key(Integer, "id", "Profile")
     championship_id = Base.foreign_key(Integer, "id", "Championship")
 
