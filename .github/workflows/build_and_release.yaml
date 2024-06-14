@@ -46,6 +46,7 @@ jobs:
         host: ${{ secrets.SRV2_HOST }}
         source: ".github/deployment/docker-compose.yaml"
         target: "/home/studyabacus/servers/exam-api/"
+        strip_components: 1
 
     - name: Update application version
       uses: appleboy/ssh-action@v0.1.3
