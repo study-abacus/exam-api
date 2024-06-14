@@ -42,6 +42,7 @@ jobs:
       uses: appleboy/scp-action@v0.1.7
       with:
         key: ${{ secrets.SSH_KEY }}
+        username: studyabacus
         host: ${{ secrets.SRV2_HOST }}
         source: ".github/deployment/docker-compose.yaml"
         target: "/home/studyabacus/servers/exam-api/docker-compose.yaml"
