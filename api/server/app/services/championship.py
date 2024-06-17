@@ -81,7 +81,7 @@ class ChampionshipCRUD(AppCRUD):
         """
         try:
             # Get all records
-            result =  self.db.query(model).offset(skip).limit(limit).all()
+            result =  self.db.query(model).filter(model.active == True).offset(skip).limit(limit).all()
             return result
         except Exception as e:
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving championships: {str(e)}"})
