@@ -141,7 +141,7 @@ class ProfileCRUD(AppCRUD):
             logger.error(f'Error retrieving profile: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving profile: {str(e)}"})
 
-    async def update(self, model: ProfileModel, id: int, schema) -> ProfileModel:
+    async def update(self, id: int, schema ,model= ProfileModel) -> ProfileModel:
         """
         Update profile.
         """

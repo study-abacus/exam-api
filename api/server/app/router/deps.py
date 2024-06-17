@@ -1,13 +1,18 @@
-from fastapi import Query
+from fastapi import Query, Depends
+from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Generator
 
 
 from db.session import SessionDB
 from db.redis import Redis
+from utils.jwt import decode_jwt_token
 
 
 import json
 import logging
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 def get_session() -> Generator:
@@ -83,5 +88,11 @@ def get_order(championship_id: int , examination_ids: str = Query(None, descript
             "examination_ids": examination_ids.split(",") if "," in examination_ids else [examination_ids]
         }
         return order
+    except Exception as e:
+        return None
+    
+def get_admit_card(token: str = Depends(oauth2_scheme)):
+    try:
+        return decode_jwt_token(token)
     except Exception as e:
         return None

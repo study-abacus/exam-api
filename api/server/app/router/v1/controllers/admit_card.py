@@ -3,7 +3,9 @@ from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
 from utils.service_request import handle_result
+from utils.jwt import decode_jwt_token
 from schemas.admit_card import AdmitCardAuthenticateBase,AdmitCardAuthenticate, AdmitCardCreate, AdmitCard, AdmitCardUpdate, AdmitCardCreateManual
+from schemas.profile import ProfileUpdate, Profile
 from services.admit_card import AdmitCardService
 
 from app.router import deps
@@ -21,6 +23,14 @@ async def authenticate_admit_card(admit_card: AdmitCardAuthenticateBase, db: Ses
     result = await AdmitCardService(db).authenticate_admit_card(admit_card)
     return handle_result(result)
 
+
+@router.put("/current", response_model=Profile)
+async def create_current_admit_card(profile:ProfileUpdate,admit_card:dict = Depends(deps.get_admit_card), db: Session = Depends(deps.get_session)):
+    """
+    Create new admit_card.
+    """
+    result = await AdmitCardService(db).update_current_admit_card(profile,admit_card)
+    return handle_result(result)
 
 @router.get("/", response_model=List[AdmitCard])
 async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):

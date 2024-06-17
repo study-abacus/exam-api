@@ -11,6 +11,8 @@ from schemas.admit_card import(
     AdmitCard as AdmitCardSchema,
     AdmitCardAuthenticateBase
 )
+from schemas.profile import ProfileUpdate
+from services.profile import ProfileCRUD
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
@@ -22,6 +24,17 @@ import datetime
 logger = logging.getLogger(__name__)
 
 class AdmitCardService(AppService):
+
+    async def update_current_admit_card(self,profile:ProfileUpdate, admit_card: dict) -> ServiceResult:
+        """
+        Update current admit_card.
+        """
+        try:
+            profile = await ProfileCRUD(self.db).update(admit_card['profile_id'], profile)
+            return ServiceResult(profile)
+        except Exception as e:
+            logger.error(f'Error updating admit_card: {str(e)}')
+            return ServiceResult(AppException.RequestUpdateItem( {"ERROR": f"Error updating admit_card: {str(e)}"}))
     
     async def authenticate_admit_card(self, admit_card: AdmitCardAuthenticateBase) -> ServiceResult:
         """

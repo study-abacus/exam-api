@@ -20,3 +20,14 @@ def create_jwt_token(admit_card: AdmitCard) -> Any:
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def decode_jwt_token(token: str) -> Any:
+    """
+    Decode jwt token.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None

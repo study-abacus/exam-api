@@ -19,6 +19,7 @@ from app.utils.request_exceptions import (
 )
 from app.utils.app_exceptions import app_exception_handler
 from app.utils.app_exceptions import AppExceptionCase
+from app.utils.jwt import decode_jwt_token
 from app.router.v1.api import api_router
 from app.router.admin.api import api_router as admin_router
 
@@ -69,6 +70,7 @@ async def log_requests(request: Request, call_next):
     logger.info(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
    
     return response
+
 
 
 #set up Exception handler
