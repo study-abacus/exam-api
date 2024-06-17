@@ -44,7 +44,7 @@ class ExaminationService(AppService):
         Retrieve examination.
         """
         try:
-            result = await ExaminationCRUD(self.db).get(ExaminationModel, examination_id)
+            result = await ExaminationCRUD(self.db).get( examination_id)
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
@@ -85,7 +85,7 @@ class ExaminationService(AppService):
 
 class ExaminationCRUD(AppCRUD):
 
-    async def get_all(self, model, skip: int = 0, limit: int = 100, filters: Optional[List[Any]] = None) -> ExaminationModel:
+    async def get_all(self,  skip: int = 0, limit: int = 100,model=ExaminationModel, filters: Optional[List[Any]] = None) -> ExaminationModel:
         """
         Retrieve all examinations.
         """
@@ -112,7 +112,7 @@ class ExaminationCRUD(AppCRUD):
             logger.error(f'Error creating examination: {str(e)}')
             return AppException.RequestCreateItem( {"ERROR": f"Error creating examination: {str(e)}"})
 
-    async def get(self, model, id: int) -> ExaminationModel:
+    async def get(self,  id: int,model= ExaminationModel) -> ExaminationModel:
         """
         Retrieve examination by id.
         """

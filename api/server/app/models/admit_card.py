@@ -28,3 +28,6 @@ class AdmitCard(Base):
     
     def add_to_dict(self, key, value):
         self.__dict__[key] = value
+
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}

@@ -3,7 +3,7 @@ from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
 from utils.service_request import handle_result
-from schemas.admit_card import AdmitCardBase, AdmitCardCreate, AdmitCard, AdmitCardUpdate
+from schemas.admit_card import AdmitCardAuthenticateBase,AdmitCardAuthenticate, AdmitCardCreate, AdmitCard, AdmitCardUpdate, AdmitCardCreateManual
 from services.admit_card import AdmitCardService
 
 from app.router import deps
@@ -12,6 +12,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.post("/authenticate")
+async def authenticate_admit_card(admit_card: AdmitCardAuthenticateBase, db: Session = Depends(deps.get_session)):
+    """
+    Authenticate admit_card.
+    """
+    result = await AdmitCardService(db).authenticate_admit_card(admit_card)
+    return handle_result(result)
+
 
 @router.get("/", response_model=List[AdmitCard])
 async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):
@@ -22,7 +31,7 @@ async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depend
     return handle_result(result)
 
 @router.post("/{profile_id}", response_model=AdmitCard)
-async def create_admit_card(profile_id: int, admit_card: AdmitCardCreate, championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
+async def create_admit_card(profile_id: int, admit_card: AdmitCardCreateManual, championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
     """
     Create new admit_card.
     """

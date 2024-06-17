@@ -39,7 +39,7 @@ class OrderService(AppService):
             
             order_amount = championship.primary_price + ((len(order.examination_ids) -1) * championship.secondary_price) if len(order.examination_ids) > 1 else championship.primary_price
             order_base = OrderAmount(
-                amount = order_amount,
+                amount = "{:.2f}".format(order_amount/100) ,
                 notes = f'Order for championship {order.championship_id} with {len(order.examination_ids)} examinations.'
             )
             return ServiceResult(order_base)
@@ -93,7 +93,7 @@ class OrderService(AppService):
             if req.status_code == 200:
                 order_base = OrderBase(
                     order_id = str(res['id']),
-                    amount = res['amount'],
+                    amount = "{:.2f}".format(res['amount']/100),
                     currency = res['currency']
                 )
                 # add the order to the cache

@@ -2,11 +2,14 @@ from utils.app_exceptions import AppException
 
 from services.main import AppService, AppCRUD
 from utils.service_request import ServiceResult
+from utils.hash import hash_password
+from utils.jwt import create_jwt_token
 
 from models.admit_card import AdmitCard as AdmitCardModel
 from schemas.admit_card import(
     AdmitCardCreate as AdmitCardCreateSchema,
-    AdmitCard as AdmitCardSchema
+    AdmitCard as AdmitCardSchema,
+    AdmitCardAuthenticateBase
 )
 
 from sqlalchemy import asc, desc, and_
@@ -19,6 +22,24 @@ import datetime
 logger = logging.getLogger(__name__)
 
 class AdmitCardService(AppService):
+    
+    async def authenticate_admit_card(self, admit_card: AdmitCardAuthenticateBase) -> ServiceResult:
+        """
+        Authenticate admit_card.
+        """
+        try:
+            _admit_card = await AdmitCardCRUD(self.db).get(AdmitCardModel, admit_card.id)
+            hashed_password = await hash_password(admit_card.password)
+            if _admit_card.password_hash == hashed_password:
+                _admit_card.password_hash = None
+                _admit_card._sa_instance_state = None
+                token = create_jwt_token(_admit_card)
+                return ServiceResult({"jwt": token})
+            else:
+                return ServiceResult(AppException.RequestAuthenticateItem( {"ERROR": "Invalid password"}))
+        except Exception as e:
+            logger.error(f'Error authenticating admit_card: {str(e)}')
+            return ServiceResult(AppException.RequestAuthenticateItem( {"ERROR": f"Error authenticating admit_card: {str(e)}"}))
 
     async def get_admit_cards(self, skip: int = 0, limit: int = 100) -> ServiceResult:
         """
@@ -36,7 +57,7 @@ class AdmitCardService(AppService):
         Create new admit_card.
         """
         try:
-            result = await AdmitCardCRUD(self.db).create(AdmitCardModel, profile_id, championship_id, examination_ids, admit_card)
+            result = await AdmitCardCRUD(self.db).create( profile_id, championship_id, examination_ids, admit_card)
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error creating admit_card: {str(e)}')
