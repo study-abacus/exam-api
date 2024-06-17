@@ -36,7 +36,7 @@ class OrderService(AppService):
         try:
             #calculate the amount
             championship = await  ChampionshipCRUD(self.db).get(ChampionShipModel, order.championship_id)
-            
+
             order_amount = championship.primary_price + ((len(order.examination_ids) -1) * championship.secondary_price) if len(order.examination_ids) > 1 else championship.primary_price
             order_base = OrderAmount(
                 amount = "{:.2f}".format(order_amount/100) ,
@@ -104,22 +104,23 @@ class OrderService(AppService):
         except Exception as e:
             logger.error(f'Error creating order: {str(e)}')
             return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error creating order: {str(e)}"}))
-        
+
     async def capture_order(self, order_id: str, order_details: OrderCapture) -> ServiceResult:
         try:
             #get the order from the cache
             order = self.cache.get( order_id)
             if order is None:
                 return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Order not found"}))
-            
+
             order = json.loads(order)
-            examination_ids =  [int(id) for id in order['examination_ids'].split(",")]
+            notes = json.loads(order['notes'])
+            examination_ids =  [int(id) for id in notes['examination_ids'].split(",")]
 
             #signature verify
             generated_signature = await hmac_sha256(order_id + "|" + order_details.payment_id, os.getenv('RAZORPAY_KEY_SECRET'))
             if generated_signature != order_details.signature:
                 return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Signature mismatch"}))
-            
+
             logger.info(f'Order verified: {order_id} {order_details.payment_id} {order_details.signature}')
 
             #capture order
@@ -138,23 +139,24 @@ class OrderService(AppService):
             res = req.json()
             if req.status_code != 200:
                 return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error capturing order: {req.text}"}))
-            
+
             logger.info(f'Order captured: {order_id} {order_details.payment_id} {order_details.signature} {res['contact']}')
-            
+
             #create a random 6 letter and digits combined password
             password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
             #create the profile
             profile = await ProfileCRUD(self.db).create_inital_profile()
-            if profile.error:
+            if hasattr(profile, 'error'):
                 return ServiceResult(f'Error creating profile: {profile.error}')
-            
+
             #create the admit card
             admitcard = {
                 "order_id": order_id,
-                "password": hash_password(password)
+                "password_hash": await hash_password(password)
             }
-            _admitcard = await AdmitCardCRUD(self.db).create( profile_id=profile.id, championship_id=int(order['Championship']), examination_ids=examination_ids, admit_card=admitcard)
+            _admitcard = await AdmitCardCRUD(self.db).create( profile_id=profile.id, championship_id=int(notes['championship']), examination_ids=examination_ids, item=admitcard)
+            logger.info(f'Admit card created: {str(_admitcard)}')
             admitcard = AdmitCard(
                 id = _admitcard.id,
                 order_id = _admitcard.order_id,

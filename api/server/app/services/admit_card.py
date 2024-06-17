@@ -86,7 +86,7 @@ class AdmitCardService(AppService):
         except Exception as e:
             logger.error(f'Error retrieving admit_card: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_card: {str(e)}"}))
-    
+
     async def update_admit_card(self, admit_card_id: int, admit_card: AdmitCardSchema, championship_id: int, examination_ids: List[int]) -> ServiceResult:
         """
         Update admit_card.
@@ -152,7 +152,7 @@ class AdmitCardService(AppService):
         except Exception as e:
             logger.error(f'Error retrieving admit_cards: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_cards: {str(e)}"}))
-    
+
     async def get_profile_examination_admit_cards(self, profile_id: int, examination_id: int) -> ServiceResult:
         """
         Retrieve admit_cards based on profile and examination.
@@ -206,7 +206,7 @@ class AdmitCardCRUD(AppCRUD):
         Create new item.
         """
         try:
-            item = AdmitCardModel(**item.dict(), profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
+            item = AdmitCardModel(**item, profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
             self.db.add(item)
             self.db.commit()
             self.db.refresh(item)
@@ -254,4 +254,4 @@ class AdmitCardCRUD(AppCRUD):
         except Exception as e:
             logger.error(f'Error deleting item: {str(e)}')
             return AppException.RequestDeleteItem( {"ERROR": f"Error deleting item: {str(e)}"})
-    
+
