@@ -26,7 +26,7 @@ export ENTRYPOINT=${ENTRYPOINT:-./app/main.py}
 
 
 #run the python script
-python "$ENTRYPOINT"
-
+# python "$ENTRYPOINT"
+exec gunicorn --bind $HOST:$PORT "$APP_MODULE" -k uvicorn.workers.UvicornWorker  
 
 
