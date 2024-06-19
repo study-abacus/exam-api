@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 
-from router.v1.controllers import (
+from app.router.v1.controllers import (
     championship,
     examination,
     profile,

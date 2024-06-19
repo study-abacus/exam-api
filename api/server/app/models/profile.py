@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean , 
 
 from typing import Any
 
-from db.base_class import Base
+from app.db.base_class import Base
 
 class Profile(Base):
     id = Column(Integer, primary_key = True, nullable = True)

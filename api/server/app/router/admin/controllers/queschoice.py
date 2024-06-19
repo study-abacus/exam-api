@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from schemas.queschoice import QuesChoiceBase, QuesChoiceCreate, QuesChoice, QuesChoiceUpdate
-from services.queschoice import QuesChoiceService
+from app.utils.service_request import handle_result
+from app.schemas.queschoice import QuesChoiceBase, QuesChoiceCreate, QuesChoice, QuesChoiceUpdate
+from app.services.queschoice import QuesChoiceService
 
 from app.router import deps
 import logging

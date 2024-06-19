@@ -3,9 +3,9 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Generator
 
 
-from db.session import SessionDB
-from db.redis import Redis
-from utils.jwt import decode_jwt_token
+from app.db.session import SessionDB
+from app.db.redis import Redis
+from app.utils.jwt import decode_jwt_token
 
 
 import json

@@ -3,9 +3,9 @@ from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
 
-from utils.service_request import handle_result
-from schemas.championship import ChampionshipBase, ChampionshipCreate, Championship, ChampionshipUpdate
-from services.championship import ChampionshipService
+from app.utils.service_request import handle_result
+from app.schemas.championship import ChampionshipBase, ChampionshipCreate, Championship, ChampionshipUpdate
+from app.services.championship import ChampionshipService
 
 
 from app.router import deps

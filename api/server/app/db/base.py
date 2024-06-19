@@ -1,4 +1,4 @@
-from db.base_class import Base
+from app.db.base_class import Base
 
 from app.models.championship import Championship
 from app.models.examination import Examination

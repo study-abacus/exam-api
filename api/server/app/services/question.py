@@ -1,10 +1,10 @@
-from utils.app_exceptions import AppException
-from services.main import AppService, AppCRUD
+from app.utils.app_exceptions import AppException
+from app.services.main import AppService, AppCRUD
 
-from utils.service_request import ServiceResult
+from app.utils.service_request import ServiceResult
 
-from models.question import Question as QuestionModel
-from schemas.question import Question as QuestionSchema
+from app.models.question import Question as QuestionModel
+from app.schemas.question import Question as QuestionSchema
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union

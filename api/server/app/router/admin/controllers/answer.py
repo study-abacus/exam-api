@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from schemas.answer import AnswerBase, AnswerCreate, Answer, AnswerUpdate
-from services.answer import AnswerService
+from app.utils.service_request import handle_result
+from app.schemas.answer import AnswerBase, AnswerCreate, Answer, AnswerUpdate
+from app.services.answer import AnswerService
 
 from app.router import deps
 import logging

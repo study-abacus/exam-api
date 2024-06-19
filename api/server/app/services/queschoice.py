@@ -1,10 +1,10 @@
-from utils.app_exceptions import AppException
+from app.utils.app_exceptions import AppException
 
-from services.main import AppService, AppCRUD
-from utils.service_request import ServiceResult
+from app.services.main import AppService, AppCRUD
+from app.utils.service_request import ServiceResult
 
-from models.queschoice import QuesChoice as QuesChoiceModel
-from schemas.queschoice import QuesChoice as QuesChoiceSchema
+from app.models.queschoice import QuesChoice as QuesChoiceModel
+from app.schemas.queschoice import QuesChoice as QuesChoiceSchema
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union

@@ -1,19 +1,19 @@
-from utils.app_exceptions import AppException
+from app.utils.app_exceptions import AppException
 
-from services.main import AppService, AppCRUD
-from utils.service_request import ServiceResult
-from utils.hash import hash_password, hmac_sha256
+from app.services.main import AppService, AppCRUD
+from app.utils.service_request import ServiceResult
+from app.utils.hash import hash_password, hmac_sha256
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
 
-from schemas.order import OrderCreate, OrderBase, OrderAmount,OrderCapture
-from schemas.admit_card import AdmitCard
-from models.championship import Championship as ChampionShipModel
-from models.admit_card import AdmitCard as AdmitCardModel
-from services.championship import ChampionshipCRUD
-from services.profile import ProfileCRUD
-from services.admit_card import AdmitCardCRUD
+from app.schemas.order import OrderCreate, OrderBase, OrderAmount,OrderCapture
+from app.schemas.admit_card import AdmitCard
+from app.models.championship import Championship as ChampionShipModel
+from app.models.admit_card import AdmitCard as AdmitCardModel
+from app.services.championship import ChampionshipCRUD
+from app.services.profile import ProfileCRUD
+from app.services.admit_card import AdmitCardCRUD
 
 
 import logging

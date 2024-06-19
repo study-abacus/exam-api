@@ -1,10 +1,10 @@
-from utils.app_exceptions import AppException
+from app.utils.app_exceptions import AppException
 
-from services.main import AppService, AppCRUD
-from utils.service_request import ServiceResult
+from app.services.main import AppService, AppCRUD
+from app.utils.service_request import ServiceResult
 
-from models.championship import Championship as ChampionshipModel
-from schemas.championship import Championship as ChampionshipSchema
+from app.models.championship import Championship as ChampionshipModel
+from app.schemas.championship import Championship as ChampionshipSchema
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union

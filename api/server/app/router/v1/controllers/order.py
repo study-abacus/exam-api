@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from schemas.order import OrderBase, OrderCreate, OrderAmount,OrderCapture
-from schemas.admit_card import AdmitCard
-from services.order import OrderService
+from app.utils.service_request import handle_result
+from app.schemas.order import OrderBase, OrderCreate, OrderAmount,OrderCapture
+from app.schemas.admit_card import AdmitCard
+from app.services.order import OrderService
 
 from app.router import deps
 import logging

@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from typing import Any
 
-from db.base_class import Base
+from app.db.base_class import Base
 
 class AdmitCard(Base):
     id = Column(Integer, primary_key = True, nullable = True)

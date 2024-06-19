@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from schemas.profile import ProfileBase, ProfileCreate, Profile, ProfileUpdate
-from services.profile import ProfileService
+from app.utils.service_request import handle_result
+from app.schemas.profile import ProfileBase, ProfileCreate, Profile, ProfileUpdate
+from app.services.profile import ProfileService
 
 from app.router import deps
 import logging

@@ -3,9 +3,9 @@ from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
 
-from utils.service_request import handle_result
-from schemas.examination import ExaminationBase, ExaminationCreate, Examination, ExaminationUpdate
-from services.examination import ExaminationService
+from app.utils.service_request import handle_result
+from app.schemas.examination import ExaminationBase, ExaminationCreate, Examination, ExaminationUpdate
+from app.services.examination import ExaminationService
 
 from app.router import deps
 import logging

@@ -4,7 +4,7 @@
 from typing import Any
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from schemas.admit_card import AdmitCard
+from app.schemas.admit_card import AdmitCard
 import os
 
 SECRET_KEY = os.getenv("SECRET_KEY")

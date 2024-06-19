@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from schemas.admit_card import AdmitCardBase, AdmitCardCreate, AdmitCard, AdmitCardUpdate
-from services.admit_card import AdmitCardService
+from app.utils.service_request import handle_result
+from app.schemas.admit_card import AdmitCardBase, AdmitCardCreate, AdmitCard, AdmitCardUpdate
+from app.services.admit_card import AdmitCardService
 
 from app.router import deps
 import logging

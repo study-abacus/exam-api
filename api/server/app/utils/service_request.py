@@ -2,7 +2,7 @@ import logging
 import inspect
 
 
-from utils.app_exceptions import AppExceptionCase
+from app.utils.app_exceptions import AppExceptionCase
 
 
 logger = logging.getLogger(__name__)
