@@ -25,6 +25,7 @@ COPY ./server/pyproject.toml ./server/poetry.lock* /app/
 RUN poetry add requests
 RUN poetry add redis 
 RUN poetry add python-jose
+RUN poetry add gunicorn
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
