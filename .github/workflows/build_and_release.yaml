@@ -55,5 +55,5 @@ jobs:
         username: studyabacus
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/studyabacus/servers/exam-api && docker-compose pull && docker-compose up -d
+          cd /home/studyabacus/servers/exam-api/deployment && docker-compose pull && docker-compose up -d
 
