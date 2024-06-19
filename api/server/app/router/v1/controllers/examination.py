@@ -23,7 +23,7 @@ async def read_examinations_for_championship(championship_id:int , skip: int = 0
     return handle_result(result)
 
 
-@router.get("/{examination_id}", response_model=Examination)
+@router.get("/{examination_id}/", response_model=Examination)
 async def read_examination(examination_id: int, db: Session = Depends(deps.get_session)):
     """
     Retrieve examination.

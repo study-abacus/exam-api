@@ -27,7 +27,7 @@ async def read_championships(skip: int = 0, limit: int = 100, db: Session = Depe
     return handle_result(result)
 
 
-@router.get("/{championship_id}", response_model=Championship)
+@router.get("/{championship_id}/", response_model=Championship)
 async def read_championship(championship_id: int, db: Session = Depends(deps.get_session)):
     """
     Retrieve championship.

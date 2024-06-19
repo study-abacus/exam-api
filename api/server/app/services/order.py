@@ -50,20 +50,6 @@ class OrderService(AppService):
     async def create_order(self, order: OrderCreate) -> ServiceResult:
         """
         Create new order.
-
-        razorpay api
-        curl -u [YOUR_KEY_ID]:[YOUR_KEY_SECRET] \
-        -X POST https://api.razorpay.com/v1/orders \
-        -H "content-type: application/json" \
-        -d '{
-        "amount": 50000,
-        "currency": "INR",
-        "receipt": "receipt#1",
-        "notes": {
-            "key1": "value3",
-            "key2": "value2"
-        }
-        }'
         """
         try:
             #calculate the amount

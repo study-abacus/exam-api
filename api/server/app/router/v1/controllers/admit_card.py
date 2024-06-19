@@ -25,7 +25,7 @@ async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depend
 """
 Input: AdmitCard_id ; password 
 """
-@router.post("/auth", response_model=List[AdmitCard])
+@router.post("/auth/", response_model=List[AdmitCard])
 async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):
     """
     Retrieve admit_cards.
@@ -35,7 +35,7 @@ async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depend
 
 
 
-@router.post("/{profile_id}", response_model=AdmitCard)
+@router.post("/{profile_id}/", response_model=AdmitCard)
 async def create_admit_card(profile_id: int, admit_card: AdmitCardCreate, championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
     """
     Create new admit_card.
@@ -51,7 +51,7 @@ async def create_admit_card(profile_id: int, admit_card: AdmitCardCreate, champi
 #     result = await AdmitCardService(db).get_admit_card(admit_card_id)
 #     return handle_result(result)
 
-@router.put("/{admit_card_id}", response_model=AdmitCard)
+@router.put("/{admit_card_id}/", response_model=AdmitCard)
 async def update_admit_card(admit_card_id: int, admit_card: AdmitCardUpdate,championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
     """
     Update admit_card.

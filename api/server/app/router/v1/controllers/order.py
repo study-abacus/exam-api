@@ -22,7 +22,7 @@ async def create_order(order: OrderCreate, db: Session = Depends(deps.get_sessio
     result = await OrderService(db, cache).create_order(order)
     return handle_result(result)
 
-@router.post("/calculate", response_model=OrderAmount)
+@router.post("/calculate/", response_model=OrderAmount)
 async def calculate_order(order: OrderCreate, db: Session = Depends(deps.get_session)):
     """
     Calculate order.
@@ -30,7 +30,7 @@ async def calculate_order(order: OrderCreate, db: Session = Depends(deps.get_ses
     result = await OrderService(db).calculate_order(order)
     return handle_result(result)
 
-@router.post("/{order_id}/capture", response_model=AdmitCard)
+@router.post("/{order_id}/capture/", response_model=AdmitCard)
 async def capture_order(order_id: str, order_details :OrderCapture, db: Session = Depends(deps.get_session), cache = Depends(deps.get_cache)):
     """
     Capture order.
