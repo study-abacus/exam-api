@@ -78,7 +78,7 @@ class ExaminationService(AppService):
         """
         try:
             print("Enter service")
-            result = await ExaminationCRUD(self.db).get_all(ExaminationModel,  skip, limit,filters=[ExaminationModel.championship_id == championship_id])
+            result = await ExaminationCRUD(self.db).get_all(  skip, limit,filters=[ExaminationModel.championship_id == championship_id])
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving championship examinations: {str(e)}')
