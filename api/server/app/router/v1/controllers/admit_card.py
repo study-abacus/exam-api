@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from utils.service_request import handle_result
-from utils.jwt import decode_jwt_token
-from schemas.admit_card import AdmitCardAuthenticateBase,AdmitCardAuthenticate, AdmitCardCreate, AdmitCard, AdmitCardUpdate, AdmitCardCreateManual
-from schemas.profile import ProfileUpdate, Profile
-from services.admit_card import AdmitCardService
+from app.utils.service_request import handle_result
+from app.utils.jwt import decode_jwt_token
+from app.schemas.admit_card import AdmitCardAuthenticateBase,AdmitCardAuthenticate, AdmitCardCreate, AdmitCard, AdmitCardUpdate, AdmitCardCreateManual
+from app.schemas.profile import ProfileUpdate, Profile
+from app.services.admit_card import AdmitCardService
 
 from app.router import deps
 import logging
