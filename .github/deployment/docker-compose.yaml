@@ -6,4 +6,4 @@ services:
       - 8001:8001
     env_file:
       - .env.exam-api
-
+    privileged: true 
