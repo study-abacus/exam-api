@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
-from app.utils.service_request import handle_result
-from app.schemas.admit_card import AdmitCardBase, AdmitCardCreate, AdmitCard, AdmitCardUpdate
-from app.services.admit_card import AdmitCardService
+from utils.service_request import handle_result
+from utils.jwt import decode_jwt_token
+from schemas.admit_card import AdmitCardAuthenticateBase,AdmitCardAuthenticate, AdmitCardCreate, AdmitCard, AdmitCardUpdate, AdmitCardCreateManual
+from schemas.profile import ProfileUpdate, Profile
+from services.admit_card import AdmitCardService
 
 from app.router import deps
 import logging
@@ -12,6 +14,23 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.post("/authenticate/")
+async def authenticate_admit_card(admit_card: AdmitCardAuthenticateBase, db: Session = Depends(deps.get_session)):
+    """
+    Authenticate admit_card.
+    """
+    result = await AdmitCardService(db).authenticate_admit_card(admit_card)
+    return handle_result(result)
+
+
+@router.put("/current/", response_model=Profile)
+async def create_current_admit_card(profile:ProfileUpdate,admit_card:dict = Depends(deps.get_admit_card), db: Session = Depends(deps.get_session)):
+    """
+    Create new admit_card.
+    """
+    result = await AdmitCardService(db).update_current_admit_card(profile,admit_card)
+    return handle_result(result)
 
 @router.get("/", response_model=List[AdmitCard])
 async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):
@@ -21,37 +40,23 @@ async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depend
     result = await AdmitCardService(db).get_admit_cards( skip=skip, limit=limit)
     return handle_result(result)
 
-
-"""
-Input: AdmitCard_id ; password 
-"""
-@router.post("/auth/", response_model=List[AdmitCard])
-async def read_admit_cards(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):
-    """
-    Retrieve admit_cards.
-    """
-    result = await AdmitCardService(db).get_admit_cards( skip=skip, limit=limit)
-    return handle_result(result)
-
-
-
-@router.post("/{profile_id}/", response_model=AdmitCard)
-async def create_admit_card(profile_id: int, admit_card: AdmitCardCreate, championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
+@router.post("/{profile_id}", response_model=AdmitCard)
+async def create_admit_card(profile_id: int, admit_card: AdmitCardCreateManual, championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
     """
     Create new admit_card.
     """
     result = await AdmitCardService(db).create_admit_card(profile_id, championship_id, examination_ids, admit_card)
     return handle_result(result)
 
-# @router.get("/{admit_card_id}", response_model=AdmitCard)
-# async def read_admit_card(admit_card_id: int, db: Session = Depends(deps.get_session)):
-#     """
-#     Retrieve admit_card.
-#     """
-#     result = await AdmitCardService(db).get_admit_card(admit_card_id)
-#     return handle_result(result)
+@router.get("/{admit_card_id}", response_model=AdmitCard)
+async def read_admit_card(admit_card_id: int, db: Session = Depends(deps.get_session)):
+    """
+    Retrieve admit_card.
+    """
+    result = await AdmitCardService(db).get_admit_card(admit_card_id)
+    return handle_result(result)
 
-@router.put("/{admit_card_id}/", response_model=AdmitCard)
+@router.put("/{admit_card_id}", response_model=AdmitCard)
 async def update_admit_card(admit_card_id: int, admit_card: AdmitCardUpdate,championship_id: int= Depends(deps.championship_id_param), examination_ids : List[int] = Depends(deps.examination_ids_param), db: Session = Depends(deps.get_session)):
     """
     Update admit_card.
