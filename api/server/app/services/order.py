@@ -67,6 +67,11 @@ class OrderService(AppService):
                 })
             }
 
+            championship_detail =  await ChampionshipCRUD(self.db).get(int(payload['notes']['championship']))
+
+            if len(payload['notes']['examination_ids']) > championship_detail.max_exams:
+                return ServiceResult(AppException.RequestGetItem( {"ERROR": f"You can only select {championship_detail.max_exams} for this championship"}))
+
             req = requests.post(
                 os.getenv('RAZORPAY_ORDER_URL'),
                 auth=(os.getenv('RAZORPAY_KEY_ID'), os.getenv('RAZORPAY_KEY_SECRET')),
