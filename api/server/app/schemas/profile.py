@@ -4,7 +4,7 @@ from pydantic import BaseModel, validator, Field
 from datetime import datetime
 
 class ProfileBase(BaseModel):
-    name: str
+    name: Optional[str]
     ci : Optional[str]
     guardian_name: Optional[str]
     email: Optional[str]
