@@ -28,6 +28,16 @@ async def app_exception_handler(request: Request, exc: AppExceptionCase):
 
 
 class AppException(object):
+    class RequestOrderGetItem(AppExceptionCase):
+        def __init__(self, context: dict = None):
+            """
+            Item requires authentication
+            """
+            status_code = 400
+            AppExceptionCase.__init__(self, status_code, context)
+
+
+
     class RequestAuthenticateItem(AppExceptionCase):
         def __init__(self, context: dict = None):
             """
