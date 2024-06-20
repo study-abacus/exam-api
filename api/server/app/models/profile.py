@@ -11,7 +11,7 @@ class Profile(Base):
     ci = Column(String(100), nullable = True)
     sa_class =  Column(Integer, nullable = True)
     age =  Column(Integer, nullable= True)
-    city = Column(Integer, nullable =True)
+    city = Column(String(100), nullable =True)
     country = Column(String(100), nullable = True)
     guardian_name = Column(String(100), nullable = True)
     email = Column(String(100), nullable = True)
@@ -24,7 +24,7 @@ class Profile(Base):
         return f"Profile {self.name}"
     
     def __str__(self) -> str:
-        return f"Profiles {self.name}"
+        return f"Profile {self.name}"
     
     def __eq__(self, other):
         return self.name == other.name

@@ -6,10 +6,10 @@ from datetime import datetime
 class ProfileBase(BaseModel):
     name: Optional[str]
     ci : Optional[str]
-    sa_class : Optional[str]
+    sa_class : Optional[int]
     city : Optional[str]
     country : Optional[str]
-    age : Optional[str]
+    age : Optional[int]
     guardian_name: Optional[str]
     email: Optional[str]
     phone: Optional[str]
