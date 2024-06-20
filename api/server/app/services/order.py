@@ -70,7 +70,7 @@ class OrderService(AppService):
             championship_detail =  await ChampionshipCRUD(self.db).get(ChampionShipModel, int(order.championship_id))
 
             if len(order.examination_ids) > championship_detail.max_exams:
-                return ServiceResult(AppException.RequestOrderGetItem( {"ERROR": f"You can only select {championship_detail.max_exams} for this championship"}))
+                return ServiceResult(AppException.RequestOrderGetItem( {"ERROR": f"You can only select {championship_detail.max_exams} examination(s)"}))
 
             req = requests.post(
                 os.getenv('RAZORPAY_ORDER_URL'),
