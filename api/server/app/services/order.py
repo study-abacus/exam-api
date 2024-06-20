@@ -129,7 +129,7 @@ class OrderService(AppService):
             logger.info(f'Order captured: {order_id} {order_details.payment_id} {order_details.signature} {res['contact']}')
 
             #create a random 6 letter and digits combined password
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+            password = ''.join(random.choices(string.digits, k=6))
 
             #create the profile
             profile = await ProfileCRUD(self.db).create_inital_profile()
