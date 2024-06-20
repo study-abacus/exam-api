@@ -1,18 +1,18 @@
-from app.utils.app_exceptions import AppException
+from utils.app_exceptions import AppException
 
-from app.services.main import AppService, AppCRUD
-from app.utils.service_request import ServiceResult
-from app.utils.hash import hash_password
-from app.utils.jwt import create_jwt_token
+from services.main import AppService, AppCRUD
+from utils.service_request import ServiceResult
+from utils.hash import hash_password
+from utils.jwt import create_jwt_token
 
-from app.models.admit_card import AdmitCard as AdmitCardModel
-from app.schemas.admit_card import(
+from models.admit_card import AdmitCard as AdmitCardModel
+from schemas.admit_card import(
     AdmitCardCreate as AdmitCardCreateSchema,
     AdmitCard as AdmitCardSchema,
     AdmitCardAuthenticateBase
 )
-from app.schemas.profile import ProfileUpdate
-from app.services.profile import ProfileCRUD
+from schemas.profile import ProfileUpdate
+from services.profile import ProfileCRUD
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
@@ -24,6 +24,17 @@ import datetime
 logger = logging.getLogger(__name__)
 
 class AdmitCardService(AppService):
+
+    async def get_current_admit_card(self,admit_card:dict) -> ServiceResult:
+        """
+        Retrieve current admit_card.
+        """
+        try:
+            result = await ProfileCRUD(self.db).get( admit_card['profile_id'])
+            return ServiceResult(result)
+        except Exception as e:
+            logger.error(f'Error retrieving admit_card: {str(e)}')
+            return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_card: {str(e)}"}))
 
     async def update_current_admit_card(self,profile:ProfileUpdate, admit_card: dict) -> ServiceResult:
         """
@@ -86,7 +97,7 @@ class AdmitCardService(AppService):
         except Exception as e:
             logger.error(f'Error retrieving admit_card: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_card: {str(e)}"}))
-
+    
     async def update_admit_card(self, admit_card_id: int, admit_card: AdmitCardSchema, championship_id: int, examination_ids: List[int]) -> ServiceResult:
         """
         Update admit_card.
@@ -152,7 +163,7 @@ class AdmitCardService(AppService):
         except Exception as e:
             logger.error(f'Error retrieving admit_cards: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving admit_cards: {str(e)}"}))
-
+    
     async def get_profile_examination_admit_cards(self, profile_id: int, examination_id: int) -> ServiceResult:
         """
         Retrieve admit_cards based on profile and examination.
@@ -206,7 +217,7 @@ class AdmitCardCRUD(AppCRUD):
         Create new item.
         """
         try:
-            item = AdmitCardModel(**item, profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
+            item = AdmitCardModel(**item.dict(), profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
             self.db.add(item)
             self.db.commit()
             self.db.refresh(item)
@@ -254,4 +265,4 @@ class AdmitCardCRUD(AppCRUD):
         except Exception as e:
             logger.error(f'Error deleting item: {str(e)}')
             return AppException.RequestDeleteItem( {"ERROR": f"Error deleting item: {str(e)}"})
-
+    
