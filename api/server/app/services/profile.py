@@ -1,10 +1,10 @@
-from app.utils.app_exceptions import AppException
+from utils.app_exceptions import AppException
 
-from app.services.main import AppService, AppCRUD
-from app.utils.service_request import ServiceResult
+from services.main import AppService, AppCRUD
+from utils.service_request import ServiceResult
 
-from app.models.profile import Profile as ProfileModel
-from app.schemas.profile import Profile as ProfileSchema
+from models.profile import Profile as ProfileModel
+from schemas.profile import Profile as ProfileSchema
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
@@ -130,7 +130,7 @@ class ProfileCRUD(AppCRUD):
             logger.error(f'Error creating profile: {str(e)}')
             return AppException.RequestCreateItem( {"ERROR": f"Error creating profile: {str(e)}"})
 
-    async def get(self, model: ProfileModel, profile_id: int) -> ProfileModel:
+    async def get(self,  profile_id: int,model= ProfileModel) -> ProfileModel:
         """
         Retrieve profile.
         """
