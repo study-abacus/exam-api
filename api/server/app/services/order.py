@@ -67,9 +67,9 @@ class OrderService(AppService):
                 })
             }
 
-            championship_detail =  await ChampionshipCRUD(self.db).get(int(payload['notes']['championship']))
+            championship_detail =  await ChampionshipCRUD(self.db).get(int(order.championship_id))
 
-            if len(payload['notes']['examination_ids']) > championship_detail.max_exams:
+            if len(order.examination_ids) > championship_detail.max_exams:
                 return ServiceResult(AppException.RequestGetItem( {"ERROR": f"You can only select {championship_detail.max_exams} for this championship"}))
 
             req = requests.post(
