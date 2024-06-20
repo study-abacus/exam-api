@@ -13,6 +13,7 @@ class Championship(Base):
     primary_price = Column(FLOAT(precision=10, scale=2))
     secondary_price = Column(FLOAT(precision=10, scale=2))
     active = Column(Boolean)
+    max_exams =  Column(Integer, nullable =  True)
 
 
     def __init__(self, **kwargs) -> None: 

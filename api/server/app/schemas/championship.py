@@ -10,6 +10,7 @@ class ChampionshipBase(BaseModel):
     primary_price: float = Field(..., description="Primary price", example=100.00, gt=0) #validation for price >0
     secondary_price: float = Field(..., description="Secondary price", example=50.00, gt=0) #validation for price >0
     active: bool = True
+    max_exams:int
 
     @validator('primary_price', 'secondary_price', pre=True)
     def format_price(cls, value):
