@@ -1,18 +1,18 @@
-from utils.app_exceptions import AppException
+from app.utils.app_exceptions import AppException
 
-from services.main import AppService, AppCRUD
-from utils.service_request import ServiceResult
-from utils.hash import hash_password
-from utils.jwt import create_jwt_token
+from app.services.main import AppService, AppCRUD
+from app.utils.service_request import ServiceResult
+from app.utils.hash import hash_password
+from app.utils.jwt import create_jwt_token
 
-from models.admit_card import AdmitCard as AdmitCardModel
-from schemas.admit_card import(
+from app.models.admit_card import AdmitCard as AdmitCardModel
+from app.schemas.admit_card import(
     AdmitCardCreate as AdmitCardCreateSchema,
     AdmitCard as AdmitCardSchema,
     AdmitCardAuthenticateBase
 )
-from schemas.profile import ProfileUpdate
-from services.profile import ProfileCRUD
+from app.schemas.profile import ProfileUpdate
+from app.services.profile import ProfileCRUD
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
