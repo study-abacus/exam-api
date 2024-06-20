@@ -112,7 +112,7 @@ def favicon():
 
 app.include_router(root_router)
 app.include_router(api_router, prefix=settings.API_V1_STR)
-app.include_router(admin_router, prefix=settings.ADMIN_STR)
+# app.include_router(admin_router, prefix=settings.ADMIN_STR)
 
 if __name__ == "__main__":
     import uvicorn

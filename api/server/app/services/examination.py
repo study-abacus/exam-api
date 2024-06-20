@@ -93,7 +93,7 @@ class ExaminationCRUD(AppCRUD):
             query = self.db.query(model)
             if filters:
                 query = query.filter(*filters)
-            return query.order_by(asc(model.id)).offset(skip).limit(limit).all()
+            return query.order_by(asc(model.name)).offset(skip).limit(limit).all()
         except Exception as e:
             logger.error(f'Error retrieving examinations: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving examinations: {str(e)}"})
