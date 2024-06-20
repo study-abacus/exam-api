@@ -217,7 +217,7 @@ class AdmitCardCRUD(AppCRUD):
         Create new item.
         """
         try:
-            item = AdmitCardModel(**item.dict(), profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
+            item = AdmitCardModel(**item, profile_id=profile_id, championship_id=championship_id, examination_ids=examination_ids)
             self.db.add(item)
             self.db.commit()
             self.db.refresh(item)
