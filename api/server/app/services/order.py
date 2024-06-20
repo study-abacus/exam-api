@@ -45,7 +45,7 @@ class OrderService(AppService):
             return ServiceResult(order_base)
         except Exception as e:
             logger.error(f'Error calculating order: {str(e)}')
-            return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error calculating order: {str(e)}"}))
+            return ServiceResult(AppException.RequestGetItem( {"Error": f"Error calculating order: {str(e)}"}))
 
     async def create_order(self, order: OrderCreate) -> ServiceResult:
         """
