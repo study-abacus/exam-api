@@ -21,9 +21,8 @@ from app.utils.app_exceptions import app_exception_handler
 from app.utils.app_exceptions import AppExceptionCase
 from app.utils.jwt import decode_jwt_token
 from app.router.v1.api import api_router
+from app.router.v2.api import api_router as api_v2_router
 from app.router.admin.api import api_router as admin_router
-
-
 
 
 from app.core.config import settings
@@ -112,11 +111,12 @@ def favicon():
 
 app.include_router(root_router)
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_v2_router, prefix=settings.API_V2_STR)
 # app.include_router(admin_router, prefix=settings.ADMIN_STR)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = False)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = True)
 
 
 
