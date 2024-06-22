@@ -35,9 +35,9 @@ class SessionDB(Database):
 
 
             self.engine = create_engine(self.SQLALCHEMY_DATABASE_URL,
-                                      pool_size=50,
+                                      pool_size=25,
                                       max_overflow=2,
-                                      pool_recycle=100,
+                                      pool_recycle=50,
                                       pool_timeout=30,
                                       pool_pre_ping=True,
                                       pool_use_lifo=True
