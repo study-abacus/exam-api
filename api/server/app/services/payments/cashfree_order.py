@@ -4,7 +4,7 @@ from app.services.main import AppService, AppCRUD
 from app.utils.service_request import ServiceResult
 from app.utils.hash import hash_password, hmac_sha256
 
-from sqlalchemy import asc, desc, and_
+from fastapi import HTTPException
 from typing import List, Any , Optional, Union
 from cashfree_pg.models.create_order_request import CreateOrderRequest
 from cashfree_pg.api_client import Cashfree
@@ -22,7 +22,7 @@ from app.services.admit_card import AdmitCardCRUD
 
 
 import logging
-import requests
+import asyncio
 import datetime
 import os
 import json
@@ -33,6 +33,11 @@ import shortuuid
 
 
 logger = logging.getLogger(__name__)
+
+Cashfree.XClientId = os.getenv('CASHFREE_KEY_ID')
+Cashfree.XClientSecret = os.getenv('CASHFREE_KEY_SECRET')
+Cashfree.XEnvironment = Cashfree.SANDBOX
+x_api_version = "2023-08-01"
 
 class CashFreeOrderService(AppService):
 
@@ -70,51 +75,69 @@ class CashFreeOrderService(AppService):
             return False
         
 
-    async def _cashfree_order(self,order: OrderCreate, profile : ProfileOrderCreate):
-        try:
-            #calculate the amount
-            championship = await self.calculate_order(order)
-            order_amount = championship.value.amount
-            order_id = f'order_{shortuuid.ShortUUID().random(length=20)}'
-            customer_id = await hash_password(profile.phone)
+    async def _cashfree_order(self, order: OrderCreate, profile: ProfileOrderCreate):
+            try:
+                order_id, order_amount, customer_details = await self.prepare_order(order, profile)
+                create_order_request = self.create_order_request(order_id, order_amount, customer_details, order)
 
+                api_response = self.create_cashfree_order(create_order_request)
 
-            Cashfree.XClientId = os.getenv('CASHFREE_KEY_ID')
-            Cashfree.XClientSecret = os.getenv('CASHFREE_KEY_SECRET')
-            Cashfree.XEnvironment = Cashfree.SANDBOX
-            x_api_version = "2023-08-01"
+                self.cache_order_data(order_id, order, profile)
+                
+                return api_response.data
+            except Exception as e:
+                logger.error(f'CashFree:: Error creating order: {str(e)}')
+                return ServiceResult(AppException.RequestCreateItem({"ERROR": f"CashFree:: Error creating order: {str(e)}"}))
 
+    async def prepare_order(self, order: OrderCreate, profile: ProfileOrderCreate):
+        championship = await self.calculate_order(order)
+        order_amount = championship.value.amount
+        order_id = f'order_{shortuuid.ShortUUID().random(length=20)}'
+        customer_id = await hash_password(profile.phone)
 
-            customerDetails = CustomerDetails(customer_id=str(customer_id), customer_phone=(profile.phone).replace("+",""))
-            customerDetails.customer_name = profile.name
-            customerDetails.customer_email = profile.email
+        customer_details = self.create_customer_details(customer_id, profile)
 
-            createOrderRequest = CreateOrderRequest(order_id=order_id, order_amount=float(order_amount), order_currency="INR", customer_details=customerDetails)
+        return order_id, order_amount, customer_details
 
-            orderMeta = OrderMeta()
-            orderMeta.return_url = None
-            createOrderRequest.order_meta = orderMeta
-            createOrderRequest.order_note = f'order#{datetime.datetime.now().strftime("%H:%M:%S")}'
-            createOrderRequest.order_tags = {
-                "championship": str(order.championship_id),
-                "examination_ids": ",".join(map(str, order.examination_ids))
-            }
+    def create_customer_details(self, customer_id: str, profile: ProfileOrderCreate):
+        customer_details = CustomerDetails(
+            customer_id=str(customer_id),
+            customer_phone=profile.phone
+        )
+        customer_details.customer_name = profile.name
+        customer_details.customer_email = profile.email
+        return customer_details
 
+    def create_order_request(self, order_id: str, order_amount: float, customer_details: CustomerDetails, order: OrderCreate):
+        create_order_request = CreateOrderRequest(
+            order_id=order_id,
+            order_amount=float(order_amount),
+            order_currency="INR",
+            customer_details=customer_details
+        )
 
-            api_response = Cashfree().PGCreateOrder(x_api_version, createOrderRequest, None, None)
+        order_meta = OrderMeta()
+        order_meta.return_url = None
+        create_order_request.order_meta = order_meta
+        create_order_request.order_note = f'order#{datetime.datetime.now().strftime("%H:%M:%S")}'
+        create_order_request.order_tags = {
+            "championship": str(order.championship_id),
+            "examination_ids": ",".join(map(str, order.examination_ids))
+        }
 
-            self.cache.set( order_id, json.dumps({
-                'championship_id': order.championship_id,
-                'examination_ids': order.examination_ids,
-                'name' : profile.name,
-                'phone': profile.phone,
-                'email' : profile.email
-            }))
-                 
-            return api_response.data
-        except Exception as e:
-            logger.error(f'CashFree:: Error creating order: {str(e)}')
-            return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"CashFree:: Error creating order: {str(e)}"}))
+        return create_order_request
+
+    def create_cashfree_order(self, create_order_request: CreateOrderRequest):
+        return Cashfree().PGCreateOrder(x_api_version, create_order_request, None, None)
+
+    def cache_order_data(self, order_id: str, order: OrderCreate, profile: ProfileOrderCreate):
+        self.cache.set(order_id, json.dumps({
+            'championship_id': order.championship_id,
+            'examination_ids': order.examination_ids,
+            'name': profile.name,
+            'phone': profile.phone,
+            'email': profile.email
+        }))
 
     async def create_order(self, order: OrderCreate, profile : ProfileOrderCreate) -> ServiceResult:
         """
@@ -135,69 +158,91 @@ class CashFreeOrderService(AppService):
             logger.error(f'Error creating order: {str(e)}')
             return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error creating order: {str(e)}"}))
 
-    async def capture_order(self, order_id: str, order_details: OrderCapture) -> ServiceResult:
+    async def capture_order(self, order_id: str) -> ServiceResult:
         try:
-            #get the order from the cache
-            order = self.cache.get( order_id)
+            order = self.get_order_from_cache(order_id)
             if order is None:
-                return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Order not found"}))
+                return ServiceResult(AppException.RequestCreateItem({"ERROR": "Order not found"}))
 
-            order = json.loads(order)
-            notes = json.loads(order['notes'])
-            examination_ids =  [int(id) for id in notes['examination_ids'].split(",")]
+            order,  examination_ids = self.parse_order(order)
 
-            #signature verify
-            generated_signature = await hmac_sha256(order_id + "|" + order_details.payment_id, os.getenv('RAZORPAY_KEY_SECRET'))
-            if generated_signature != order_details.signature:
-                return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Signature mismatch"}))
+            api_response = self.fetch_order_payments(order_id)[0]
+            payment_status = api_response.payment_status
 
-            logger.info(f'Order verified: {order_id} {order_details.payment_id} {order_details.signature}')
 
-            #capture order
-            payload = {
-                "amount": order['amount'],
-                "currency": order['currency'],
-            }
 
-            req = requests.post(
-                f'{os.getenv("RAZORPAY_PAYMENT_URL")}/{order_details.payment_id}/capture',
-                auth=(os.getenv('RAZORPAY_KEY_ID'), os.getenv('RAZORPAY_KEY_SECRET')),
-                headers={'content-type': 'application/json'},
-                json=payload  # Convert payload to JSON
-            )
-
-            res = req.json()
-            if req.status_code != 200:
-                return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error capturing order: {req.text}"}))
-
-            logger.info(f'Order captured: {order_id} {order_details.payment_id} {order_details.signature} {res['contact']}')
-
-            #create a random 6 letter and digits combined password
-            password = ''.join(random.choices(string.digits, k=6))
-
-            #create the profile
-            profile = await ProfileCRUD(self.db).create_inital_profile()
-            if hasattr(profile, 'error'):
-                return ServiceResult(f'Error creating profile: {profile.error}')
-
-            #create the admit card
-            admitcard = {
-                "order_id": order_id,
-                "password_hash": await hash_password(password)
-            }
-            _admitcard = await AdmitCardCRUD(self.db).create( profile_id=profile.id, championship_id=int(notes['championship']), examination_ids=examination_ids, item=admitcard)
-            logger.info(f'Admit card created: {str(_admitcard)}')
-            admitcard = AdmitCard(
-                id = _admitcard.id,
-                order_id = _admitcard.order_id,
-                password = password,
-                championship_id = _admitcard.championship_id,
-                examination_ids = _admitcard.examination_ids,
-                profile_id = _admitcard.profile_id
-            )
-
-            return ServiceResult(admitcard)
+            if payment_status == 'SUCCESS':
+                print("Here in success")
+                return await self.handle_successful_payment(order_id,order,  examination_ids)
+            elif payment_status == 'PENDING':
+                return await self.handle_pending_payment(order_id, order, examination_ids)
+            else:
+                return self.handle_failed_payment(payment_status)
 
         except Exception as e:
             logger.error(f'Error capturing order: {str(e)}')
-            return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error capturing order: {str(e)}"}))
+            return ServiceResult(AppException.RequestCreateItem({"ERROR": f"Error capturing order: {str(e)}"}))
+
+    def get_order_from_cache(self, order_id: str):
+        return self.cache.get(order_id)
+
+    def parse_order(self, order):
+        order = json.loads(order)
+        examination_ids = order['examination_ids']
+        return order, examination_ids
+
+    def fetch_order_payments(self, order_id: str):
+        return Cashfree().PGOrderFetchPayments(x_api_version, order_id, None).data
+
+    async def handle_successful_payment(self, order_id: str, order, examination_ids:list):
+        logger.info(f'Order captured: {order_id}')
+
+        password = self.generate_random_password()
+        profile = await ProfileCRUD(self.db).create_inital_profile()
+        if hasattr(profile, 'error'):
+            return ServiceResult(f'Error creating profile: {profile.error}')
+
+        admitcard = await self.create_admit_card(order_id, order, examination_ids, password, profile.id)
+        return ServiceResult(admitcard)
+
+    async def handle_pending_payment(self, order_id: str,order,  examination_ids):
+        for attempt in range(2):
+            logger.info(f'Retry attempt {attempt + 1} for pending payment: {order_id}')
+            await asyncio.sleep(10)
+            api_response = self.fetch_order_payments(order_id)
+            if api_response.payment_status == 'SUCCESS':
+                return await self.handle_successful_payment(order_id, order,  examination_ids)
+            elif api_response.payment_status == 'FAILURE':
+                return self.handle_failed_payment(api_response['payment_status'])
+
+        logger.info(f'Order still pending after retries: {order_id}')
+        return ServiceResult({"message": "Payment still pending, please try again later"})
+
+    def handle_failed_payment(self, payment_status: str):
+        logger.error(f'Payment failed with status: {payment_status}')
+        raise HTTPException(status_code=400, detail=f'Payment failed with status: {payment_status}')
+
+    def generate_random_password(self):
+        return ''.join(random.choices(string.digits, k=6))
+
+    async def create_admit_card(self, order_id: str, order, examination_ids, password, profile_id: int):
+        password_hash = await hash_password(password)
+        admitcard_data = {
+            "order_id": order_id,
+            "password_hash": password_hash
+        }
+        _admitcard = await AdmitCardCRUD(self.db).create(
+            profile_id=profile_id, 
+            championship_id=int(order['championship_id']), 
+            examination_ids=order['examination_ids'], 
+            item=admitcard_data
+        )
+        logger.info(f'Admit card created: {str(_admitcard)}')
+        return AdmitCard(
+            id=_admitcard.id,
+            order_id=_admitcard.order_id,
+            password=password,
+            championship_id=_admitcard.championship_id,
+            examination_ids=_admitcard.examination_ids,
+            profile_id=_admitcard.profile_id
+        )

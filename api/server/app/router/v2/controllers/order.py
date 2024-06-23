@@ -32,9 +32,9 @@ async def calculate_order(order: OrderCreate, db: Session = Depends(deps.get_ses
     return handle_result(result)
 
 @router.post("/{order_id}/capture/", response_model=AdmitCard)
-async def capture_order(order_id: str, order_details :OrderCapture, db: Session = Depends(deps.get_session), cache = Depends(deps.get_cache)):
+async def capture_order(order_id: str,  db: Session = Depends(deps.get_session), cache = Depends(deps.get_cache)):
     """
     Capture order.
     """
-    result = await CashFreeOrderService(db, cache).capture_order(order_id, order_details)
+    result = await CashFreeOrderService(db, cache).capture_order(order_id)
     return handle_result(result)
