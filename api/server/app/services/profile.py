@@ -98,8 +98,8 @@ class ProfileCRUD(AppCRUD):
                 ci = "",
                 email = order['email'],
                 phone = order['phone'],
-                sa_class = "",
-                age = "",
+                sa_class = 0,
+                age = 0,
                 city = "",
                 country = "",
                 guardian_name = ""
