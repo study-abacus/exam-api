@@ -1,5 +1,5 @@
 from typing import List, Any , Optional, Union, ClassVar
-from pydantic import BaseModel, validator,  ValidationError
+from pydantic import BaseModel, validator,  root_validator
 from fastapi import HTTPException
 from app.utils.app_exceptions  import AppException
 from datetime import datetime
@@ -30,18 +30,30 @@ class ProfileOrderCreate(BaseModel):
 
         country_code = values.get('country_code')
         if country_code is None:
-            raise ValidationError('Country code is required if phone number is provided')
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+
+        # Check if the phone number has exactly 10 digits
+        if len(v) != 10:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
 
         full_number = f"+{country_code}{v}"
 
         try:
             parsed_number = phonenumbers.parse(full_number)
             if not phonenumbers.is_valid_number(parsed_number):
-                raise ValueError('Invalid phone number format')
-        except phonenumbers.phonenumberutil.NumberParseException as e:
-            raise AppException.RequestOrderCreateItem( {"ERROR": f"Please Check Your Details"})
+                raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        except phonenumbers.phonenumberutil.NumberParseException:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
 
         return v
+
+    @root_validator
+    def check_name_or_email(cls, values):
+        name = values.get('name')
+        email = values.get('email')
+        if not name and not email:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        return values
     
 
 
