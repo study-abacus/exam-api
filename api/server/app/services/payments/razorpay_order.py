@@ -27,7 +27,7 @@ import string
 
 logger = logging.getLogger(__name__)
 
-class OrderService(AppService):
+class RazorPayOrderService(AppService):
 
     async def calculate_order(self, order: OrderCreate) -> ServiceResult:
         """

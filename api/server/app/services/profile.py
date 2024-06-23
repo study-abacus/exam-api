@@ -88,23 +88,21 @@ class ProfileCRUD(AppCRUD):
             logger.error(f'Error retrieving profiles: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving profiles: {str(e)}"})
         
-    async def create_inital_profile(self):
+    async def create_inital_profile(self, order):
         """
         Create initial profile.
         """
         try:
             new_profile = ProfileModel(
-                first_name = "",
-                last_name = "",
-                email = "",
-                phone = "",
-                address = "",
+                name = order['name'],
+                ci = "",
+                email = order['email'],
+                phone = order['phone'],
+                sa_class = 0,
+                age = 0,
                 city = "",
-                state = "",
                 country = "",
-                zip_code = "",
-                created_at = datetime.datetime.now(),
-                updated_at = datetime.datetime.now()
+                guardian_name = ""
             )
             self.db.add(new_profile)
             self.db.commit()

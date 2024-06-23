@@ -1,33 +1,15 @@
-import pathlib
-from pydantic import AnyHttpUrl, validator
-from pydantic_settings import BaseSettings
-from typing import List, Optional, Union
 
 
-# Project Directories
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+class Settings:
+    API_V1_STR: str
+    API_V2_STR: str
+    ADMIN_STR: str
+    BACKEND_CORS_ORIGINS: list
 
-
-class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
-    ADMIN_STR: str = "/api/admin"
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = ["http://localhost:3000", "http://localhost:8001","http://*", "https://*"]
-
-
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
-
-
-    class Config:
-        case_sensitive = True
+    def __init__(self):
+        self.API_V1_STR: str = "/api/v1"
+        self.API_V2_STR: str = "/api/v2"
+        self.ADMIN_STR: str = "/api/admin"
 
 
 settings = Settings()
-
-
-

@@ -18,6 +18,9 @@ services:
       - POSTGRES_USER=private
       - POSTGRES_PASSWORD=private
       - POSTGRES_DB=private
+
+    ports:
+      - 5432:5432
     logging:
       driver: "json-file"
       options:
