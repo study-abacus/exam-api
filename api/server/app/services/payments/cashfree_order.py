@@ -151,7 +151,7 @@ class CashFreeOrderService(AppService):
     
             cashfree_res = await self._cashfree_order(order, profile)
             
-            return ServiceResult({'payment_session_id':cashfree_res.payment_session_id})
+            return ServiceResult({'payment_session_id':cashfree_res.payment_session_id, 'order_id': cashfree_res.order_id})
         except Exception as e:
             logger.error(f'Error creating order: {str(e)}')
             raise ServiceResult(AppException.RequestOrderCreateItem( {"ERROR": f"Please Check Your Details"}))
