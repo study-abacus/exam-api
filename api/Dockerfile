@@ -22,16 +22,13 @@ RUN curl -sSLk https://install.python-poetry.org | POETRY_HOME=/opt/poetry pytho
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./server/pyproject.toml ./server/poetry.lock* /app/
 
-RUN poetry add requests
-RUN poetry add redis 
-RUN poetry add python-jose
-RUN poetry add gunicorn
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
 
 
 RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --no-dev ; fi"
+
 
 
 COPY ./server /app
