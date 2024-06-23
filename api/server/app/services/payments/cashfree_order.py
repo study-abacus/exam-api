@@ -200,7 +200,7 @@ class CashFreeOrderService(AppService):
         logger.info(f'Order captured: {order_id}')
 
         password = self._generate_random_password()
-        profile = await ProfileCRUD(self.db).create_inital_profile()
+        profile = await ProfileCRUD(self.db).create_inital_profile(order)
         if hasattr(profile, 'error'):
             return ServiceResult(f'Error creating profile: {profile.error}')
 
