@@ -26,7 +26,7 @@ class ProfileOrderCreate(BaseModel):
     @validator('phone', pre=True)
     def validate_phone_number(cls, v, values, field):
         if v is None:
-            return None  # If phone is None, validation pass (assuming it's optional)
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
 
         country_code = values.get('country_code')
         if country_code is None:
@@ -45,6 +45,24 @@ class ProfileOrderCreate(BaseModel):
         except phonenumbers.phonenumberutil.NumberParseException:
             raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
 
+        return v
+    
+    @validator('email', pre=True)
+    def validate_email(cls,v, values, field):
+        if v is None:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        if len(v) == 0:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        
+        return v
+    
+    @validator('name', pre=True)
+    def validate_name(cls,v, values, field):
+        if v is None:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        if len(v) == 0:
+            raise AppException.RequestOrderCreateItem({"ERROR": "Please Check Your Details"})
+        
         return v
 
     @root_validator
