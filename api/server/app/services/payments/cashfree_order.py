@@ -86,7 +86,7 @@ class CashFreeOrderService(AppService):
                 return api_response.data
             except Exception as e:
                 logger.error(f'CashFree:: Error creating order: {str(e)}')
-                return ServiceResult(AppException.RequestCreateItem({"ERROR": f"Please Check Your Details!"}))
+                return ServiceResult(AppException.RequestOrderCreateItem({"ERROR": f"Please Check Your Details!"}))
 
     async def _prepare_order(self, order: OrderCreate, profile: ProfileOrderCreate):
         championship = await self.calculate_order(order)
@@ -154,7 +154,7 @@ class CashFreeOrderService(AppService):
             return ServiceResult(cashfree_res)
         except Exception as e:
             logger.error(f'Error creating order: {str(e)}')
-            return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Please Check Your Details"}))
+            return ServiceResult(AppException.RequestOrderCreateItem( {"ERROR": f"Please Check Your Details"}))
 
     async def capture_order(self, order_id: str) -> ServiceResult:
         try:
