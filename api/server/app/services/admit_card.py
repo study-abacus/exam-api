@@ -53,6 +53,7 @@ class AdmitCardService(AppService):
         """
         try:
             _admit_card = await AdmitCardCRUD(self.db).get(AdmitCardModel, admit_card.id)
+            print(_admit_card)
             hashed_password = await hash_password(admit_card.password)
             if _admit_card.password_hash == hashed_password:
                 _admit_card.password_hash = None

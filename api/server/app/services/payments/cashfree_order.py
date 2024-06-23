@@ -86,7 +86,7 @@ class CashFreeOrderService(AppService):
                 return api_response.data
             except Exception as e:
                 logger.error(f'CashFree:: Error creating order: {str(e)}')
-                return ServiceResult(AppException.RequestCreateItem({"ERROR": f"CashFree:: Error creating order: {str(e)}"}))
+                return ServiceResult(AppException.RequestCreateItem({"ERROR": f"Please Check Your Details!"}))
 
     async def _prepare_order(self, order: OrderCreate, profile: ProfileOrderCreate):
         championship = await self.calculate_order(order)
@@ -154,7 +154,7 @@ class CashFreeOrderService(AppService):
             return ServiceResult(cashfree_res)
         except Exception as e:
             logger.error(f'Error creating order: {str(e)}')
-            return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error creating order: {str(e)}"}))
+            return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Please Check Your Details"}))
 
     async def capture_order(self, order_id: str) -> ServiceResult:
         try:
@@ -162,21 +162,28 @@ class CashFreeOrderService(AppService):
             if order is None:
                 return ServiceResult(AppException.RequestCreateItem({"ERROR": "Order not found"}))
 
-            order,  examination_ids = self._parse_order(order)
+            order, examination_ids = self._parse_order(order)
 
-            api_response = self._fetch_order_payments(order_id)[0]
-            payment_status = api_response.payment_status
+            api_response = self._fetch_order_payments(order_id)
 
-            if payment_status == 'SUCCESS':
-                return await self._handle_successful_payment(order_id,order,  examination_ids)
-            elif payment_status == 'PENDING':
-                return await self._handle_pending_payment(order_id)
+            successful_transaction = next((txn for txn in api_response if txn.payment_status == 'SUCCESS'), None)
+
+            if successful_transaction:
+                return await self._handle_successful_payment(order_id, order, examination_ids)
+            
+            latest_transaction = max(api_response, key=lambda txn: txn.payment_time, default=None)
+
+            if latest_transaction:
+                if latest_transaction.payment_status == 'PENDING':
+                    return await self._handle_pending_payment(order_id)
+                else:
+                    return self._handle_failed_payment(latest_transaction.payment_status)
             else:
-                return self._handle_failed_payment(payment_status)
-
+                return self._handle_failed_payment("No transactions found")
         except Exception as e:
             logger.error(f'Error capturing order: {str(e)}')
             return ServiceResult(AppException.RequestCreateItem({"ERROR": f"Error capturing order: {str(e)}"}))
+
 
     def _get_order_from_cache(self, order_id: str):
         return self.cache.get(order_id)
