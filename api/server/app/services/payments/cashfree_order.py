@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 Cashfree.XClientId = os.getenv('CASHFREE_KEY_ID')
 Cashfree.XClientSecret = os.getenv('CASHFREE_KEY_SECRET')
-Cashfree.XEnvironment = Cashfree.SANDBOX
+Cashfree.XEnvironment = getattr(Cashfree, os.getenv('CASHFREE_ENV'))
 x_api_version = "2023-08-01"
 
 class CashFreeOrderService(AppService):
