@@ -43,6 +43,7 @@ logger = logging.getLogger(__name__)
 origins = [
     "http://0.0.0.0:3000",
     "http://localhost:3000",
+    'https://examination.studyabacus.com',
     "*"
 ]
 
@@ -116,7 +117,7 @@ app.include_router(api_v2_router, prefix=settings.API_V2_STR)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = False)
 
 
 
