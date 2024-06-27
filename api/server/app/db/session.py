@@ -35,15 +35,21 @@ class SessionDB(Database):
 
 
             self.engine = create_engine(self.SQLALCHEMY_DATABASE_URL,
-                                                    
-                                          pool_recycle=300,      
-                                          pool_pre_ping=True   
+                                         pool_size=30,           # Set pool_size to 30, respecting the max_connections limit of PostgreSQL
+                                          max_overflow=10,        # Adjust max_overflow accordingly based on peak load scenarios
+                                          pool_timeout=30,        # Timeout in seconds before giving up on getting a connection from the pool
+                                          pool_recycle=1800,      # Recycle connections after 30 minutes (1800 seconds)
+                                          pool_pre_ping=True,     # Check the connection health before use (recommended for PostgreSQL)
+                                          echo=True               # Set to True to see SQL statements echoed to stdout (for debugging)
                                 )
            
 
 
       def get_session(self):
-            session_local = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+            session_local = sessionmaker(bind=self.engine,
+            autocommit=False,
+            autoflush=False,
+            expire_on_commit=False)
             return session_local()
 
 
