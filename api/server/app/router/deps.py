@@ -15,6 +15,7 @@ import logging
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+
 def get_session() -> Generator:
     db = SessionDB()
     db_session = db.get_session()
@@ -22,8 +23,13 @@ def get_session() -> Generator:
         raise ValueError("DB Session is not set. Please check the configuration.")
     try:
         yield db_session
+        db_session.commit()  
+    except:
+        db_session.rollback()  
+        raise
     finally:
-        db_session.close()
+        db_session.close()  
+
 
 
 def get_cache() -> Generator:
