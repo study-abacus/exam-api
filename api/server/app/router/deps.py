@@ -23,7 +23,7 @@ def get_session() -> Generator:
         raise ValueError("DB Session is not set. Please check the configuration.")
     try:
         yield db_session
-        db_session.commit()  
+        # db_session.commit()  
     except:
         db_session.rollback()  
         raise

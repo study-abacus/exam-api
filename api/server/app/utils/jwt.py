@@ -10,12 +10,12 @@ import os
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
-def create_jwt_token(admit_card: AdmitCard) -> Any:
+def create_jwt_token(admit_card: dict) -> Any:
     """
     Create jwt token of admit card object.
     """
 
-    to_encode = admit_card.__dict__
+    to_encode = admit_card
     expire = datetime.utcnow() + timedelta(hours=24)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

@@ -52,11 +52,11 @@ class AdmitCardService(AppService):
         Authenticate admit_card.
         """
         try:
-            _admit_card = await AdmitCardCRUD(self.db).get(AdmitCardModel, admit_card.id)
+            _admit_card = dict(await AdmitCardCRUD(self.db).get(AdmitCardModel, admit_card.id))
             hashed_password = await hash_password(admit_card.password)
-            if _admit_card.password_hash == hashed_password:
-                _admit_card.password_hash = None
-                _admit_card._sa_instance_state = None
+            if _admit_card['password_hash'] == hashed_password:
+                _admit_card['password_hash'] = None
+                _admit_card['_sa_instance_state'] = None
                 token = create_jwt_token(_admit_card)
                 return ServiceResult({"jwt": token})
             else:
