@@ -25,5 +25,12 @@ class Question(QuestionBase):
     class Config:
         orm_mode = True
 
-class QuestionUpdate(QuestionBase):
-    pass
+class QuestionUpdate(BaseModel):
+    answer : str
+
+class QuestionAuth(BaseModel):
+    question_id: int
+    title: str
+    description: str
+    questype: str
+    question_choices: str
