@@ -1,12 +1,15 @@
 from app.utils.app_exceptions import AppException
 from app.services.main import AppService, AppCRUD
+from app.services.queschoice import QuesChoiceCRUD
 
 from app.utils.service_request import ServiceResult
 
 from app.models.question import Question as QuestionModel
+from app.models.queschoice import QuesChoice as QuesChoiceModel
 from app.schemas.question import Question as QuestionSchema
 
 from sqlalchemy import asc, desc, and_
+from sqlalchemy.dialects.postgresql import insert
 from typing import List, Any , Optional, Union
 
 import logging
@@ -45,6 +48,9 @@ class QuestionService(AppService):
         """
         try:
             result = await QuestionCRUD(self.db).get(QuestionModel, question_id)
+            question_choice = await QuesChoiceCRUD(self.db).get_all(QuesChoiceModel, filters=[QuesChoiceModel.question_id == question_id])
+            question_choice = [x.value for x in question_choice]
+            result.question_choices = ",".join(question_choice)
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving question: {str(e)}')
@@ -52,14 +58,18 @@ class QuestionService(AppService):
 
     async def update_question(self, question_id: int, question: QuestionSchema) -> ServiceResult:
         """
-        Update question.
+        Update  question.
         """
+
         try:
-            result = await QuestionCRUD(self.db).update(QuestionModel, question_id, question)
-            return ServiceResult(result)
+            #upsert the question_attempt
+            question_attempt = await QuestionCRUD(self.db).upsert(QuestionModel, question_id, question)
+            return ServiceResult(question_attempt)
         except Exception as e:
             logger.error(f'Error updating question: {str(e)}')
             return ServiceResult(AppException.RequestUpdateItem( {"ERROR": f"Error updating question: {str(e)}"}))
+        
+
 
     async def delete_question(self, question_id: int) -> ServiceResult:
         """
@@ -78,6 +88,8 @@ class QuestionService(AppService):
         """
         try:
             result = await QuestionCRUD(self.db).get_all(QuestionModel, filters=[QuestionModel.examination_id == examination_id])
+            # Cache the result
+            self.cache.set(f"exam_{examination_id}", result)
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving questions for examination: {str(e)}')
@@ -85,6 +97,25 @@ class QuestionService(AppService):
 
 
 class QuestionCRUD(AppCRUD):
+
+    async def upsert(self, model, id: int, schema: QuestionSchema) -> QuestionModel:
+        """
+        Upsert question by id.
+        """
+        try:
+            stmt = insert(model).values(id=id, **schema.dict()).on_conflict_do_update(
+                index_elements=['id'],
+                set_={field: getattr(schema, field) for field in schema.dict()}
+            )
+            result = self.db.execute(stmt)
+            self.db.commit()
+            return self.db.query(model).filter(model.id == id).first()
+        except Exception as e:
+            self.db.rollback()  # Rollback in case of error
+            logger.error(f'Error upserting question: {str(e)}')
+            raise AppException.RequestUpdateItem({"ERROR": f"Error upserting question: {str(e)}"})
+
+
 
     async def get_all(self, model, skip: int = 0, limit: int = 100, filters: Optional[List[Any]] = None) -> QuestionModel:
         """
