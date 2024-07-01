@@ -6,7 +6,8 @@ from app.router.v1.controllers import (
     examination,
     profile,
     admit_card,
-    order
+    order,
+    question
 )
 
 
@@ -18,5 +19,5 @@ api_router.include_router(examination.router, prefix="/examination", tags=["Exam
 api_router.include_router(profile.router, prefix="/profile", tags=["Profile"])
 api_router.include_router(admit_card.router, prefix="/admit_card", tags=["AdmitCard"])
 api_router.include_router(order.router, prefix="/order", tags=["Order"])
-
+api_router.include_router(question.router, prefix="/question", tags = ["Question"])
 

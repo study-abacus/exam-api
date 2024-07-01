@@ -29,7 +29,7 @@ from app.core.config import settings
 
 
 root_router = APIRouter()
-app = FastAPI(title="StudyAbacus APIs", openapi_url=f"{settings.API_V1_STR}/openapi.json",docs_url=None, redoc_url=None)
+app = FastAPI(title="StudyAbacus APIs", openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
 
 # setup logger
@@ -117,7 +117,7 @@ app.include_router(api_v2_router, prefix=settings.API_V2_STR)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = False)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = True)
 
 
 
