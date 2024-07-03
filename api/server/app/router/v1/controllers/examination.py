@@ -24,11 +24,11 @@ async def read_examinations_for_championship(championship_id:int , skip: int = 0
 
 
 @router.get("/{examination_id}/", response_model=Examination)
-async def read_examination(examination_id: int, db: Session = Depends(deps.get_session)):
+async def read_examination(examination_id: int, db: Session = Depends(deps.get_session), cache = Depends(deps.get_cache)):
     """
     Retrieve examination.
     """
-    result = await ExaminationService(db).get_examination(examination_id)
+    result = await ExaminationService(db, cache).get_examination(examination_id)
     return handle_result(result)
 
 

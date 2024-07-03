@@ -44,12 +44,12 @@ class ExaminationService(AppService):
         Retrieve examination.
         """
         try:
-            result = await ExaminationCRUD(self.db).get( examination_id)
+            result = await ExaminationCRUD(self.db, self.cache).get( examination_id)
             return ServiceResult(result)
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"}))
-    
+
     async def update_examination(self, examination_id: int, examination: ExaminationSchema) -> ServiceResult:
         """
         Update examination.
@@ -125,7 +125,7 @@ class ExaminationCRUD(AppCRUD):
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"})
-    
+
     async def update(self, model, id: int, schema) -> ExaminationModel:
         """
         Update examination by id.
