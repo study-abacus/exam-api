@@ -29,8 +29,12 @@ class QuestionUpdate(BaseModel):
     answer : str
 
 class QuestionAuth(BaseModel):
-    question_id: int
+    id: int
     title: str
     description: str
     questype: str
-    question_choices: str
+    examination_id : int
+    answer: Optional[str]
+
+    class Config:
+        orm_mode = True

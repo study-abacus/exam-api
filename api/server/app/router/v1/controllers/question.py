@@ -5,65 +5,50 @@ from sqlalchemy.orm import Session
 from app.utils.service_request import handle_result
 from app.schemas.question import QuestionBase, QuestionAuth, Question, QuestionUpdate
 from app.services.question import QuestionService
+from app.services.examination import ExaminationCRUD
 
 from app.router import deps
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+async def __valid_exam_time(examination_id: int, db, cache):
+    exam_details = await ExaminationCRUD(db,cache).get(examination_id)
+
+    if datetime.now() < exam_details.exam_start_dt:
+        raise HTTPException(status_code=403, detail="Examination has not started yet")
+
+
 @router.get("/", response_model=List[Question])
-def read_questions(exam_id: Optional[int] = None, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session)):
+async def read_questions( cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
     Retrieve questions.
     """
-    #get from the questions from cache using exam_id (exam_id_{exam_id})
-    if exam_id:
-        questions = cache.get(f"exam_{exam_id}")
-        if questions:
-            return questions
-    result = QuestionService(db).get_examination_questions(exam_id)
-    return handle_result(result)
+    await __valid_exam_time(payload["examination_id"], db, cache)
+    questions = await QuestionService(db, cache).get_examination_questions(payload["examination_id"])
+    return handle_result(questions)
 
-@router.get("/", response_model=QuestionAuth)
-def read_question(question_id: int, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session)):
+@router.get("/{question_id}", response_model=QuestionAuth)
+async def read_question(question_id: int, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
     Retrieve question.
     """
-    #get from the questions from cache using question_id (question_id_{question_id})
-    question = cache.get(f"question_{question_id}")
-    if question:
-        return question
-    result = QuestionService(db).get_question(question_id)
+    await __valid_exam_time(payload["examination_id"], db, cache)
+    result = await QuestionService(db, cache).get_question(question_id,  payload['admit_card_id'])
+    print(f' res {handle_result(result)}')
     return handle_result(result)
 
-"""
-## [PUT] questions?{question_id}?{exam_id} --> [AUTHENTICATE]
-    1. cache (exam_id)
-    2. verify question_id in exam_id
-    3. upsert the question_attempt
 
-    Response :  {
-        question : str
-        question options: str
-        user_answer: str
-    }
-
-
-
-"""
-
-@router.put("/", response_model=QuestionAuth)
-def update_question(question_id: int, exam_id: int, question: QuestionUpdate, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session)):
+@router.put("/{question_id}", response_model=QuestionAuth)
+async def answer_question(question_id: int, question: QuestionUpdate, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
-    Update question.
+    Answer question.
     """
     # get exam details from cache and verify if the question_id is in the exam
-    exam = cache.get(f"exam_{exam_id}")
-    if not exam:
-        return handle_result({"ERROR": "Exam not found"})
-    if question_id not in exam["questions"]:
-        return handle_result({"ERROR": "Question not found in exam"})
-    result = QuestionService(db).update_question(question_id, exam_id,exam, question)
+    
+    await __valid_exam_time(payload["examination_id"], db, cache)
+    result = await QuestionService(db, cache).answer_question(question_id, payload['admit_card_id'], question.answer)
     return handle_result(result)

@@ -13,6 +13,12 @@ class_registry: t.Dict = {}
 class Base:
     __name__: str
 
+    def as_dict(self):
+        return {
+            col.name : getattr(self, col.name)
+            for col in self.__table__.columns
+        }
+
 
     # Generate __tablename__ automatically
     @declared_attr

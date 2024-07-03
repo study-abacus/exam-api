@@ -235,7 +235,7 @@ class AdmitCardCRUD(AppCRUD):
             return item
         except Exception as e:
             logger.error(f'Error retrieving item: {str(e)}')
-            return AppException.RequestGetItem( {"ERROR": f"Error retrieving item: {str(e)}"})
+            return ServiceResult(AppException.RequestAuthenticateItem( {"ERROR": "Invalid password"}))
 
     async def update(self, model, item_id: int, item: dict, championship_id: int, examination_ids: List[int]) -> ServiceResult:
         """

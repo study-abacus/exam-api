@@ -11,7 +11,7 @@ from typing import List, Any , Optional, Union
 
 import logging
 import requests
-import datetime
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,11 @@ class ExaminationCRUD(AppCRUD):
         Retrieve examination by id.
         """
         try:
-            return self.db.query(model).filter(model.id == id).first()
+            exam_details = json.loads(self.cache.hget('examiantions', id) or '{}')
+            if not exam_details:
+                exam_details =  self.db.query(model).filter(model.id == id).first()
+                self.cache.hset('examinations', id, json.dumps(exam_details.as_dict(), default=str))
+            return exam_details
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"})

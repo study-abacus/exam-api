@@ -20,6 +20,7 @@ from app.utils.request_exceptions import (
 from app.utils.app_exceptions import app_exception_handler
 from app.utils.app_exceptions import AppExceptionCase
 from app.utils.jwt import decode_jwt_token
+from app.middleware.exam_attempt import VerifyQuestionAttemptJWTMiddleware
 from app.router.v1.api import api_router
 from app.router.v2.api import api_router as api_v2_router
 from app.router.admin.api import api_router as admin_router
@@ -55,6 +56,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# app.add_middleware(VerifyQuestionAttemptJWTMiddleware)
 
 
 @app.middleware("http")

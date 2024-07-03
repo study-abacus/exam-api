@@ -1,15 +1,17 @@
-from fastapi import Query, Depends
+from fastapi import Query, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from typing import Optional, Generator
 
 
 from app.db.session import SessionDB
 from app.db.redis import Redis
+from app.services.examination import ExaminationCRUD
 from app.utils.jwt import decode_jwt_token
 
 
 import json
 import logging
+from datetime import datetime
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -102,3 +104,23 @@ def get_admit_card(token: str = Depends(oauth2_scheme)):
         return decode_jwt_token(token)
     except Exception as e:
         return None
+
+async def valid_attempt(examination_id: int,token: str = Depends(oauth2_scheme)):
+    try:
+        payload = decode_jwt_token(token)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"JWT token invalid: {e}")
+
+    exam_ids = payload["examination_ids"]
+
+    if not exam_ids:
+        raise HTTPException(status_code=401, detail="Invalid JWT payload: exam_id missing")
+
+    if examination_id not in exam_ids:
+        raise HTTPException(status_code=403, detail="Exam ID mismatch")
+
+    return {
+        "admit_card_id" : payload['id'],
+        "examination_id" :examination_id,
+        "admit_card" : payload
+    }
