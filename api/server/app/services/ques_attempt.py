@@ -45,7 +45,7 @@ class QuestionAttemptCRUD(AppCRUD):
             logger.error(f'Error upserting question: {str(e)}')
             raise AppException.RequestUpdateItem({"ERROR": f"Error upserting question: {str(e)}"})
 
-    async def get_all(self, model, skip: int = 0, limit: int = 100, filters: Optional[List[Any]] = None) -> QuestionAttemptModel:
+    async def get_all(self, skip: int = 0, limit: int = 100, filters: Optional[List[Any]] = None, model = QuestionAttemptModel) -> QuestionAttemptModel:
         """
         Retrieve all examinations.
         """
@@ -55,8 +55,8 @@ class QuestionAttemptCRUD(AppCRUD):
                 query = query.filter(*filters)
             return query.order_by(asc(model.id)).offset(skip).limit(limit).all()
         except Exception as e:
-            logger.error(f'Error retrieving examinations: {str(e)}')
-            return AppException.RequestGetItem( {"ERROR": f"Error retrieving examinations: {str(e)}"})
+            logger.error(f'Error retrieving Question Attempts: {str(e)}')
+            return AppException.RequestGetItem( {"ERROR": f"Error retrieving question attempts: {str(e)}"})
 
     async def create(self, model, examination_id: int, question: QuestionSchema) -> QuestionAttemptModel:
         """

@@ -16,6 +16,7 @@ from typing import List, Any , Optional, Union
 import logging
 import requests
 import json
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -82,19 +83,41 @@ class QuestionService(AppService):
             logger.error(f'Error deleting question: {str(e)}')
             return ServiceResult(AppException.RequestDeleteItem( {"ERROR": f"Error deleting question: {str(e)}"}))
 
-    async def get_examination_questions(self, examination_id: int) -> ServiceResult:
+    async def get_examination_questions(self, examination_id: int, admit_card_id: int) -> ServiceResult:
         """
         Retrieve questions for examination.
         """
         try:
-            questions = json.loads(self.cache.hget('examination_questions', examination_id) or '{}')
-            if not questions:
+            # Retrieve cached questions if available
+            questions_json = self.cache.hget('examination_questions', examination_id)
+            if questions_json:
+                questions = json.loads(questions_json)
+            else:
+                # If not in cache, fetch from database and cache the result
                 questions = await QuestionCRUD(self.db).get_all(QuestionModel, filters=[QuestionModel.examination_id == examination_id])
-                self.cache.hset('examination_questions', examination_id, json.dumps([x.as_dict() for x in questions], default= str))
-            return ServiceResult(questions)
+                self.cache.hset('examination_questions', examination_id, json.dumps([x.as_dict() for x in questions], default=str))
+
+            """
+            questions_with_answers = []
+        for question in questions:
+            question_attempt = await QuestionAttemptCRUD(self.db).get(question['id'], admit_card_id)
+            question_with_answer = {**question, 'answer': question_attempt.answer if question_attempt else None}
+            questions_with_answers.append(question_with_answer)
+
+            """
+
+            ques_id_vs_ques_attempts = { 
+                attempt.question_id : attempt
+                for attempt in (await QuestionAttemptCRUD(self.db).get_all(filters=[QuestionAttemptModel.admit_card_id == admit_card_id]))
+                }
+            
+            return ServiceResult([
+                {**question , 'answer': ques_id_vs_ques_attempts[question['id']].answer if question['id'] in ques_id_vs_ques_attempts else None }
+                for question in questions
+            ])
         except Exception as e:
             logger.error(f'Error retrieving questions for examination: {str(e)}')
-            return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving questions for examination: {str(e)}"}))
+            return ServiceResult(AppException.RequestGetItem({"ERROR": f"Error retrieving questions for examination: {str(e)}"}))
 
 
 class QuestionCRUD(AppCRUD):

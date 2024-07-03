@@ -22,13 +22,13 @@ async def __valid_exam_time(examination_id: int, db, cache):
         raise HTTPException(status_code=403, detail="Examination has not started yet")
 
 
-@router.get("/", response_model=List[Question])
+@router.get("/", response_model=List[QuestionAuth])
 async def read_questions( cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
     Retrieve questions.
     """
     await __valid_exam_time(payload["examination_id"], db, cache)
-    questions = await QuestionService(db, cache).get_examination_questions(payload["examination_id"])
+    questions = await QuestionService(db, cache).get_examination_questions(payload["examination_id"], payload['admit_card_id'])
     return handle_result(questions)
 
 @router.get("/{question_id}", response_model=QuestionAuth)
