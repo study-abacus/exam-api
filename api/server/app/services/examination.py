@@ -5,6 +5,7 @@ from app.utils.service_request import ServiceResult
 
 from app.models.examination import Examination as ExaminationModel
 from app.schemas.examination import Examination as ExaminationSchema
+from app.services.exam_attempt import ExamAttemptCRUD 
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
@@ -39,13 +40,15 @@ class ExaminationService(AppService):
             logger.error(f'Error creating examination: {str(e)}')
             return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error creating examination: {str(e)}"}))
 
-    async def get_examination(self, examination_id: int) -> ServiceResult:
+    async def get_examination(self, examination_id: int, admit_card_id:int ) -> ServiceResult:
         """
         Retrieve examination.
         """
         try:
-            result = await ExaminationCRUD(self.db, self.cache).get( examination_id)
-            return ServiceResult(result)
+            examination = (await ExaminationCRUD(self.db, self.cache).get( examination_id)).as_dict()
+            exam_attempt = await ExamAttemptCRUD(self.db, self.cache).get(examination_id, admit_card_id)
+            examination['isSubmitted'] = exam_attempt.is_submitted if exam_attempt else False
+            return ServiceResult(examination)
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"}))

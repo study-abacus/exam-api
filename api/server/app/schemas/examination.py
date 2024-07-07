@@ -46,5 +46,14 @@ class Examination(ExaminationBase):
     class Config:
         orm_mode = True
 
+class ExaminationAttempts(ExaminationBase):
+    id: int
+    championship_id: int
+    isSubmitted : bool
+
+
+    class Config:
+        orm_mode = True
+
 class ExaminationUpdate(ExaminationBase):
     pass

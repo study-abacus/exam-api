@@ -51,15 +51,28 @@ class QuestionService(AppService):
         Retrieve question.
         """
         try:
-            questions = json.loads(self.cache.hget('questions', question_id) or '{}')
-            if not questions:
-                questions = await QuestionCRUD(self.db).get(QuestionModel, question_id)
-                self.cache.hset('questions', question_id, json.dumps(questions.as_dict() , default= str))
-            question_attempt = await QuestionAttemptCRUD(self.db).get(question_id,admit_card_id )   
-            return ServiceResult({**questions, 'answer' : question_attempt and question_attempt.answer })
+            # Retrieve cached question if available
+            question_json = self.cache.hget('questions', question_id)
+            if question_json:
+                question = json.loads(question_json)
+            else:
+                # If not in cache, fetch from database and cache the result
+                question_obj = await QuestionCRUD(self.db).get(QuestionModel, question_id)
+                if question_obj is None:
+                    return ServiceResult(AppException.RequestGetItem({"ERROR": "Question not found"}))
+                question = question_obj.as_dict()
+                self.cache.hset('questions', question_id, json.dumps(question, default=str))
+
+            # Retrieve the question attempt
+            question_attempt = await QuestionAttemptCRUD(self.db).get(question_id, admit_card_id)
+            answer = question_attempt.answer if question_attempt else None
+
+            # Return the question with the answer
+            return ServiceResult({**question, 'answer': answer})
         except Exception as e:
             logger.error(f'Error retrieving question: {str(e)}')
-            return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving question: {str(e)}"}))
+            return ServiceResult(AppException.RequestGetItem({"ERROR": f"Error retrieving question: {str(e)}"}))
+
 
     async def answer_question(self, question_id: int, admit_card_id:int, answer: str) -> ServiceResult:
         """
@@ -89,27 +102,41 @@ class QuestionService(AppService):
         Retrieve questions for examination.
         """
         try:
-            # Retrieve cached questions if available
-            questions_json = self.cache.hget('examination_questions', examination_id)
-            if questions_json:
-                questions = json.loads(questions_json)
-            else:
-                # If not in cache, fetch from database and cache the result
-                questions = await QuestionCRUD(self.db).get_all(QuestionModel, filters=[QuestionModel.examination_id == examination_id])
-                self.cache.hset('examination_questions', examination_id, json.dumps([x.as_dict() for x in questions], default=str))
+            questions_dict =  await self._get_cached_or_fetched_questions(examination_id)
+            ques_id_vs_ques_attempts = await self._get_question_attempts(admit_card_id)
+            merged_questions = self._merge_questions_with_attempts(questions_dict, ques_id_vs_ques_attempts)
 
-            ques_id_vs_ques_attempts = { 
-                attempt.question_id : attempt
-                for attempt in (await QuestionAttemptCRUD(self.db).get_all(filters=[QuestionAttemptModel.admit_card_id == admit_card_id]))
-                }
-            
-            return ServiceResult([
-                {**question , 'answer': ques_id_vs_ques_attempts[question['id']].answer if question['id'] in ques_id_vs_ques_attempts else None}
-                for question in questions
-            ])
+            return ServiceResult(merged_questions)
         except Exception as e:
-            logger.error(f'Error retrieving questions for examination: {str(e)}')
+            logger.error(f"Error retrieving questions for examination: {str(e)}")
             return ServiceResult(AppException.RequestGetItem({"ERROR": f"Error retrieving questions for examination: {str(e)}"}))
+
+    async def _get_cached_or_fetched_questions(self, examination_id: int):
+        questions_json = self.cache.hget('examination_questions', examination_id)
+        if questions_json:
+            return json.loads(questions_json)
+
+        questions = await QuestionCRUD(self.db).get_all(
+            QuestionModel, 
+            filters=[QuestionModel.examination_id == examination_id]
+        )
+        questions_dict = [question.as_dict() for question in questions]
+        self.cache.hset('examination_questions', examination_id, json.dumps(questions_dict, default=str))
+        return questions_dict
+
+    async def _get_question_attempts(self, admit_card_id: int):
+        attempts = await QuestionAttemptCRUD(self.db).get_all(
+            filters=[QuestionAttemptModel.admit_card_id == admit_card_id]
+        )
+        return {attempt.question_id: attempt for attempt in attempts}
+
+    def _merge_questions_with_attempts(self, questions_dict, ques_id_vs_ques_attempts):
+        return [
+            {**question, 'answer': ques_id_vs_ques_attempts[question['id']].answer 
+            if question['id'] in ques_id_vs_ques_attempts else None}
+            for question in questions_dict
+        ]
+
 
 
 class QuestionCRUD(AppCRUD):
