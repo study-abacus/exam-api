@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.utils.service_request import handle_result
 from app.schemas.examination import ExaminationBase, ExaminationCreate, Examination, ExaminationUpdate
 from app.services.examination import ExaminationService
+from app.services.exam_attempt import ExamAttemptCRUD
 
 from app.router import deps
 import logging
@@ -30,5 +31,13 @@ async def read_examination(examination_id: int, db: Session = Depends(deps.get_s
     """
     result = await ExaminationService(db, cache).get_examination(examination_id)
     return handle_result(result)
+
+@router.post("/{examination_id}/submit", status_code=status.HTTP_201_CREATED)
+async def submit_exam(examination_id:int, db: Session = Depends(deps.get_session), cache = Depends(deps.get_cache), payload : dict = Depends(deps.valid_attempt)):
+    """
+    Submit an exam
+    """
+    await ExamAttemptCRUD(db, cache).update(examination_id, payload['admit_card_id'], )
+     
 
 

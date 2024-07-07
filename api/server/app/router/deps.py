@@ -1,11 +1,14 @@
 from fastapi import Query, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from app.utils.app_exceptions import AppException
 from typing import Optional, Generator
 
 
 from app.db.session import SessionDB
 from app.db.redis import Redis
+from app.utils.service_request import ServiceResult
 from app.services.examination import ExaminationCRUD
+from app.services.exam_attempt import ExamAttemptCRUD
 from app.utils.jwt import decode_jwt_token
 
 
@@ -124,3 +127,16 @@ async def valid_attempt(examination_id: int,token: str = Depends(oauth2_scheme))
         "examination_id" :examination_id,
         "admit_card" : payload
     }
+
+
+async def valid_exam(examination_id: int, admit_card_id:int, db, cache):
+    exam_details = await ExaminationCRUD(db,cache).get(examination_id)
+    exam_attempt =  await ExamAttemptCRUD(db, cache).get_create(examination_id, admit_card_id)
+
+    if datetime.now() < exam_details.exam_start_dt:
+        return ServiceResult(AppException.ExaminationNotStarted({'ERROR':'Examination has not started Yet!'}))
+    
+    if exam_attempt.is_submitted:
+        return ServiceResult(AppException.ExamSubmitted({'ERROR':'Examination has already been submitted!'}))
+        
+        

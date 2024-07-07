@@ -8,6 +8,7 @@ from app.models.question import Question as QuestionModel
 from app.models.question_attempt import QuestionAttempt as QuestionAttemptModel
 from app.schemas.question import Question as QuestionSchema
 from app.services.ques_attempt import QuestionAttemptCRUD
+from app.services.exam_attempt import ExamAttemptCRUD
 
 from sqlalchemy import asc, desc, and_
 from sqlalchemy.dialects.postgresql import insert
@@ -54,8 +55,8 @@ class QuestionService(AppService):
             if not questions:
                 questions = await QuestionCRUD(self.db).get(QuestionModel, question_id)
                 self.cache.hset('questions', question_id, json.dumps(questions.as_dict() , default= str))
-            question_attempt = await QuestionAttemptCRUD(self.db).get(question_id,admit_card_id )
-            return ServiceResult({**questions, 'answer' : question_attempt.answer})
+            question_attempt = await QuestionAttemptCRUD(self.db).get(question_id,admit_card_id )   
+            return ServiceResult({**questions, 'answer' : question_attempt and question_attempt.answer })
         except Exception as e:
             logger.error(f'Error retrieving question: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving question: {str(e)}"}))
@@ -97,22 +98,13 @@ class QuestionService(AppService):
                 questions = await QuestionCRUD(self.db).get_all(QuestionModel, filters=[QuestionModel.examination_id == examination_id])
                 self.cache.hset('examination_questions', examination_id, json.dumps([x.as_dict() for x in questions], default=str))
 
-            """
-            questions_with_answers = []
-        for question in questions:
-            question_attempt = await QuestionAttemptCRUD(self.db).get(question['id'], admit_card_id)
-            question_with_answer = {**question, 'answer': question_attempt.answer if question_attempt else None}
-            questions_with_answers.append(question_with_answer)
-
-            """
-
             ques_id_vs_ques_attempts = { 
                 attempt.question_id : attempt
                 for attempt in (await QuestionAttemptCRUD(self.db).get_all(filters=[QuestionAttemptModel.admit_card_id == admit_card_id]))
                 }
             
             return ServiceResult([
-                {**question , 'answer': ques_id_vs_ques_attempts[question['id']].answer if question['id'] in ques_id_vs_ques_attempts else None }
+                {**question , 'answer': ques_id_vs_ques_attempts[question['id']].answer if question['id'] in ques_id_vs_ques_attempts else None}
                 for question in questions
             ])
         except Exception as e:

@@ -34,7 +34,7 @@ class QuestionAuth(BaseModel):
     description: str
     questype: str
     examination_id : int
-    answer: Optional[str]
+    answer: Optional[Union[str, None]]
 
     class Config:
         orm_mode = True
