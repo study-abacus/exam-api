@@ -14,6 +14,7 @@ from app.utils.jwt import decode_jwt_token
 
 import json
 import logging
+import pytz
 from datetime import datetime
 from jose.exceptions import ExpiredSignatureError, JWTError
 
@@ -156,7 +157,7 @@ async def valid_exam(examination_id: int, admit_card_id:int, db, cache):
     exam_details = await ExaminationCRUD(db,cache).get(examination_id)
     exam_attempt =  await ExamAttemptCRUD(db, cache).get_create(examination_id, admit_card_id)
 
-    if datetime.now() < exam_details.exam_start_dt:
+    if datetime.now(pytz.utc) < exam_details.exam_start_dt:
         return ServiceResult(AppException.ExaminationNotStarted({'ERROR':'Examination has not started Yet!'}))
     
     if exam_attempt.is_submitted:

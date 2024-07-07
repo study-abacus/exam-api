@@ -10,8 +10,8 @@ class ExamAttempt(Base):
     is_submitted = Column(Boolean)
     admit_card_id = Base.foreign_key(Integer, "id", "AdmitCard")
     examination_id = Base.foreign_key(Integer, "id", "Examination")
-    INS_DT = Column(DateTime)
-    END_DT = Column(DateTime, nullable = True)
+    INS_DT = Column(DateTime(timezone=True))
+    END_DT = Column(DateTime(timezone=True), nullable = True)
 
     __table_args__ = (
         Index('ix_admit_card_examination', 'admit_card_id', 'examination_id', unique=True),

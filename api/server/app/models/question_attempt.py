@@ -10,8 +10,8 @@ class QuestionAttempt(Base):
     answer =  Column(Text)
     admit_card_id = Base.foreign_key(Integer, "id", "AdmitCard")
     question_id = Base.foreign_key(Integer, "id", "Question")
-    INS_DT = Column(DateTime, server_default = func.now())
-    UPS_DT = Column(DateTime, server_default = func.now(), onupdate = func.now())
+    INS_DT = Column(DateTime(timezone=True), server_default = func.now())
+    UPS_DT = Column(DateTime(timezone=True), server_default = func.now(), onupdate = func.now())
 
     __table_args__ = (
         Index('ix_admit_card_question', 'admit_card_id', 'question_id', unique=True),

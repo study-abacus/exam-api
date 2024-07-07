@@ -1,3 +1,4 @@
+import pytz
 from fastapi import FastAPI, Request, HTTPException
 from datetime import datetime
 from app.utils.jwt import decode_jwt_token
@@ -42,7 +43,7 @@ class VerifyQuestionAttemptJWTMiddleware(BaseHTTPMiddleware):
             if not exam_detail:
                 raise HTTPException(status_code=404, detail="Exam not found")
             
-            if datetime.now() < exam_detail.start_time:
+            if datetime.now(pytz.utc) < exam_detail.start_time:
                 raise HTTPException(status_code=403, detail="Examination has not started yet")
 
         response = await call_next(request)
