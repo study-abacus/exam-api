@@ -39,8 +39,8 @@ class SessionDB(Database):
                                           max_overflow=10,        # Adjust max_overflow accordingly based on peak load scenarios
                                           pool_timeout=30,        # Timeout in seconds before giving up on getting a connection from the pool
                                           pool_recycle=1800,      # Recycle connections after 30 minutes (1800 seconds)
-                                          pool_pre_ping=True,     # Check the connection health before use (recommended for PostgreSQL)
-                                          echo=True               # Set to True to see SQL statements echoed to stdout (for debugging)
+                                          pool_pre_ping=True    # Check the connection health before use (recommended for PostgreSQL)
+                                          # echo=True               # Set to True to see SQL statements echoed to stdout (for debugging)
                                 )
            
 
