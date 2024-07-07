@@ -15,10 +15,13 @@ from app.utils.jwt import decode_jwt_token
 import json
 import logging
 from datetime import datetime
+from jose.exceptions import ExpiredSignatureError, JWTError
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
+logger = logging.getLogger(__name__)
 
 
 def get_session() -> Generator:
@@ -113,20 +116,40 @@ async def valid_attempt(examination_id: int,token: str = Depends(oauth2_scheme))
         payload = decode_jwt_token(token)
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"JWT token invalid: {e}")
+    
+    try:
 
-    exam_ids = payload["examination_ids"]
+        exam_ids = payload["examination_ids"]
+        current_time = datetime.utcnow()
+        expiration_time = payload.get("exp")
+        if expiration_time and expiration_time < current_time.timestamp():
+            raise ValueError("Token has expired")
 
-    if not exam_ids:
-        raise HTTPException(status_code=401, detail="Invalid JWT payload: exam_id missing")
 
-    if examination_id not in exam_ids:
-        raise HTTPException(status_code=403, detail="Exam ID mismatch")
+        if not exam_ids:
+            raise HTTPException(status_code=401, detail="Invalid JWT payload: exam_id missing")
 
-    return {
-        "admit_card_id" : payload['id'],
-        "examination_id" :examination_id,
-        "admit_card" : payload
-    }
+        if examination_id not in exam_ids:
+            raise HTTPException(status_code=403, detail="Exam ID mismatch")
+
+        return {
+            "admit_card_id" : payload['id'],
+            "examination_id" :examination_id,
+            "admit_card" : payload
+        }
+
+    except ExpiredSignatureError:
+        logger.error("JWT expired")
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except JWTError as e:
+        logger.error(f"Error decoding JWT: {str(e)}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    except (ValueError, TypeError) as e:
+        logger.error(f"Error parsing user ID from JWT: {str(e)}")
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 async def valid_exam(examination_id: int, admit_card_id:int, db, cache):
