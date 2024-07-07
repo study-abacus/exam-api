@@ -5,13 +5,14 @@ from app.utils.service_request import ServiceResult
 
 from app.models.examination import Examination as ExaminationModel
 from app.schemas.examination import Examination as ExaminationSchema
+from app.services.exam_attempt import ExamAttemptCRUD 
 
 from sqlalchemy import asc, desc, and_
 from typing import List, Any , Optional, Union
 
 import logging
 import requests
-import datetime
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -39,17 +40,19 @@ class ExaminationService(AppService):
             logger.error(f'Error creating examination: {str(e)}')
             return ServiceResult(AppException.RequestCreateItem( {"ERROR": f"Error creating examination: {str(e)}"}))
 
-    async def get_examination(self, examination_id: int) -> ServiceResult:
+    async def get_examination(self, examination_id: int, admit_card_id:int ) -> ServiceResult:
         """
         Retrieve examination.
         """
         try:
-            result = await ExaminationCRUD(self.db).get( examination_id)
-            return ServiceResult(result)
+            examination = (await ExaminationCRUD(self.db, self.cache).get( examination_id)).as_dict()
+            exam_attempt = await ExamAttemptCRUD(self.db, self.cache).get(examination_id, admit_card_id)
+            examination['is_submitted'] = exam_attempt.is_submitted if exam_attempt else False
+            return ServiceResult(examination)
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return ServiceResult(AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"}))
-    
+
     async def update_examination(self, examination_id: int, examination: ExaminationSchema) -> ServiceResult:
         """
         Update examination.
@@ -117,11 +120,15 @@ class ExaminationCRUD(AppCRUD):
         Retrieve examination by id.
         """
         try:
-            return self.db.query(model).filter(model.id == id).first()
+            exam_details = json.loads(self.cache.hget('examiantions', id) or '{}')
+            if not exam_details:
+                exam_details =  self.db.query(model).filter(model.id == id).first()
+                self.cache.hset('examinations', id, json.dumps(exam_details.as_dict(), default=str))
+            return exam_details
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
             return AppException.RequestGetItem( {"ERROR": f"Error retrieving examination: {str(e)}"})
-    
+
     async def update(self, model, id: int, schema) -> ExaminationModel:
         """
         Update examination by id.

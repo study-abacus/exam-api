@@ -20,6 +20,7 @@ from app.utils.request_exceptions import (
 from app.utils.app_exceptions import app_exception_handler
 from app.utils.app_exceptions import AppExceptionCase
 from app.utils.jwt import decode_jwt_token
+from app.middleware.exam_attempt import VerifyQuestionAttemptJWTMiddleware
 from app.router.v1.api import api_router
 from app.router.v2.api import api_router as api_v2_router
 from app.router.admin.api import api_router as admin_router
@@ -29,7 +30,7 @@ from app.core.config import settings
 
 
 root_router = APIRouter()
-app = FastAPI(title="StudyAbacus APIs", openapi_url=f"{settings.API_V1_STR}/openapi.json",docs_url=None, redoc_url=None)
+app = FastAPI(title="StudyAbacus APIs", openapi_url=f"{settings.API_V1_STR}/openapi.json")
 
 
 # setup logger
@@ -55,6 +56,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# app.add_middleware(VerifyQuestionAttemptJWTMiddleware)
 
 
 @app.middleware("http")
@@ -117,7 +119,7 @@ app.include_router(api_v2_router, prefix=settings.API_V2_STR)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = False)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, log_level="info", reload = True)
 
 
 

@@ -3,61 +3,54 @@ from typing import List, Any , Optional, Union
 from sqlalchemy.orm import Session
 
 from app.utils.service_request import handle_result
-from app.schemas.question import QuestionBase, QuestionCreate, Question, QuestionUpdate
+from app.schemas.question import QuestionBase, QuestionAuth, Question, QuestionUpdate
 from app.services.question import QuestionService
+from app.services.examination import ExaminationCRUD
+from app.services.exam_attempt import ExamAttemptCRUD
+
 
 from app.router import deps
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Question])
-async def read_questions(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_session)):
+
+@router.get("/", response_model=List[QuestionAuth])
+async def read_questions( cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
     Retrieve questions.
     """
-    result = await QuestionService(db).get_questions( skip=skip, limit=limit)
-    return handle_result(result)
+    err = await deps.valid_exam(payload["examination_id"], payload['admit_card_id'], db, cache)
+    if err:
+        return handle_result(err)
+    questions = await QuestionService(db, cache).get_examination_questions(payload["examination_id"], payload['admit_card_id'])
+    return handle_result(questions)
 
-@router.post("/{examination_id}", response_model=Question)
-async def create_question(examination_id: int, question: QuestionCreate, db: Session = Depends(deps.get_session)):
-    """
-    Create new question.
-    """
-    result = await QuestionService(db).create_question(examination_id, question)
-    return handle_result(result)
-
-@router.get("/{question_id}", response_model=Question)
-async def read_question(question_id: int, db: Session = Depends(deps.get_session)):
+@router.get("/{question_id}", response_model=QuestionAuth)
+async def read_question(question_id: int, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
     Retrieve question.
     """
-    result = await QuestionService(db).get_question(question_id)
-    return handle_result(result)
-
-@router.put("/{question_id}", response_model=Question)
-async def update_question(question_id: int, question: QuestionUpdate, db: Session = Depends(deps.get_session)):
-    """
-    Update question.
-    """
-    result = await QuestionService(db).update_question(question_id, question)
-    return handle_result(result)
-
-@router.delete("/{question_id}")
-async def delete_question(question_id: int, db: Session = Depends(deps.get_session)):
-    """
-    Delete question.
-    """
-    result = await QuestionService(db).delete_question(question_id)
+    err = await deps.valid_exam(payload["examination_id"], payload['admit_card_id'], db, cache)
+    if err:
+        return handle_result(err)
+    result = await QuestionService(db, cache).get_question(question_id,  payload['admit_card_id'])
+    print(f' res {handle_result(result)}')
     return handle_result(result)
 
 
-@router.get("/{examination_id}/questions", response_model=List[Question])
-async def read_examination_questions(examination_id: int, db: Session = Depends(deps.get_session)):
+@router.put("/{question_id}", response_model=QuestionAuth)
+async def answer_question(question_id: int, question: QuestionUpdate, cache = Depends(deps.get_cache), db: Session = Depends(deps.get_session),  payload : dict = Depends(deps.valid_attempt)):
     """
-    Retrieve questions for examination.
+    Answer question.
     """
-    result = await QuestionService(db).get_examination_questions(examination_id)
+    # get exam details from cache and verify if the question_id is in the exam
+    
+    err = await deps.valid_exam(payload["examination_id"], payload['admit_card_id'], db, cache)
+    if err:
+        return handle_result(err)
+    result = await QuestionService(db, cache).answer_question(question_id, payload['admit_card_id'], question.answer)
     return handle_result(result)

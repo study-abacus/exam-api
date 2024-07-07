@@ -28,6 +28,25 @@ async def app_exception_handler(request: Request, exc: AppExceptionCase):
 
 
 class AppException(object):
+
+    class ExaminationNotStarted(AppExceptionCase):
+        def __init__(self, context: dict = None):
+            """
+            Examination Not Started
+            """
+            status_code = 403
+            AppExceptionCase.__init__(self, status_code, context)
+
+    class ExamSubmitted(AppExceptionCase):
+        def __init__(self, context: dict = None):
+            """
+            Exam already submitted
+            """
+            status_code = 400
+            AppExceptionCase.__init__(self, status_code, context)
+
+
+
     class RequestOrderGetItem(AppExceptionCase):
         def __init__(self, context: dict = None):
             """

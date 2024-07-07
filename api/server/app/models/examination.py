@@ -9,8 +9,8 @@ class Examination(Base):
     name = Column(String(100))
     code = Column(String(100))
     description = Column(Text, default = '')
-    exam_start_dt = Column(DateTime)
-    exam_end_dt = Column(DateTime)
+    exam_start_dt = Column(DateTime(timezone=True))
+    exam_end_dt = Column(DateTime(timezone=True))
     championship_id = Base.foreign_key(Integer, "id", "Championship")
 
 

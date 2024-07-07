@@ -11,6 +11,7 @@ from app.models.profile import Profile
 from app.models.admit_card import AdmitCard
 
 from app.models.question_attempt import QuestionAttempt
+from app.models.exam_attempt import ExamAttempt
 
 from sqlalchemy.orm import relationship
 def add_relationships(base_class, relationships):
@@ -36,7 +37,9 @@ relationship_names = [
     'profile_admitcard',
     'admitcard_profile',
     'questionattempt_admitcard',
-    'questionattempt_question'
+    'questionattempt_question',
+    'examattempt_admitcard',
+    'examattempt_examination'
 ]
 
 # Add relationships to the Base class

@@ -25,5 +25,16 @@ class Question(QuestionBase):
     class Config:
         orm_mode = True
 
-class QuestionUpdate(QuestionBase):
-    pass
+class QuestionUpdate(BaseModel):
+    answer : str
+
+class QuestionAuth(BaseModel):
+    id: int
+    title: str
+    description: str
+    questype: str
+    examination_id : int
+    answer: Optional[Union[str, None]]
+
+    class Config:
+        orm_mode = True

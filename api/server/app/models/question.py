@@ -16,13 +16,13 @@ class Question(Base):
         super().__dict__.update(kwargs)
 
     def __repr__(self) -> str:
-        return f"Questions {self.name}"
+        return f"Questions {self.title}"
     
     def __str__(self) -> str:
-        return f"Questions {self.name}"
+        return f"Questions {self.title}"
     
     def __eq__(self, other):
-        return self.name == other.name
+        return self.title == other.title
     
     def add_to_dict(self, key, value):
         self.__dict__[key] = value
