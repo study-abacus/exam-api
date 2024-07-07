@@ -49,7 +49,7 @@ class Examination(ExaminationBase):
 class ExaminationAttempts(ExaminationBase):
     id: int
     championship_id: int
-    isSubmitted : bool
+    is_submitted : bool
 
 
     class Config:

@@ -47,7 +47,7 @@ class ExaminationService(AppService):
         try:
             examination = (await ExaminationCRUD(self.db, self.cache).get( examination_id)).as_dict()
             exam_attempt = await ExamAttemptCRUD(self.db, self.cache).get(examination_id, admit_card_id)
-            examination['isSubmitted'] = exam_attempt.is_submitted if exam_attempt else False
+            examination['is_submitted'] = exam_attempt.is_submitted if exam_attempt else False
             return ServiceResult(examination)
         except Exception as e:
             logger.error(f'Error retrieving examination: {str(e)}')
