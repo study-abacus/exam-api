@@ -27,6 +27,7 @@ class Question(QuestionBase):
 
 class QuestionUpdate(BaseModel):
     answer : str
+    
 
 class QuestionAuth(BaseModel):
     id: int

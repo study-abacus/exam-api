@@ -23,7 +23,7 @@ class VerifyQuestionAttemptJWTMiddleware(BaseHTTPMiddleware):
             except Exception as e:
                 raise HTTPException(status_code=401, detail=f"JWT token invalid: {e}")
             
-            print(f'payload {payload}')
+            # print(f'payload {payload}')
             
 
             exam_ids = payload["examination_ids"]

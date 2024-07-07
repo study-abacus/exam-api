@@ -78,7 +78,7 @@ class QuestionAttemptCRUD(AppCRUD):
         """
         try:
             res =  self.db.query(model).filter(and_(model.question_id == question_id, model.admit_card_id == admit_card_id)).first()
-            print(f'res {res}')
+            # print(f'res {res}')
             return res
         except Exception as e:
             logger.error(f'Error retrieving question: {str(e)}')

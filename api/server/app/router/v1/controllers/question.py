@@ -38,7 +38,7 @@ async def read_question(question_id: int, cache = Depends(deps.get_cache), db: S
     if err:
         return handle_result(err)
     result = await QuestionService(db, cache).get_question(question_id,  payload['admit_card_id'])
-    print(f' res {handle_result(result)}')
+    # print(f' res {handle_result(result)}')
     return handle_result(result)
 
 
