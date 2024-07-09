@@ -152,14 +152,20 @@ async def valid_attempt(examination_id: int,token: str = Depends(oauth2_scheme))
         logger.error(f"Unexpected error: {str(e)}")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-
-async def valid_exam(examination_id: int, admit_card_id:int, db, cache):
-    exam_details = await ExaminationCRUD(db,cache).get(examination_id)
-    if datetime.now(pytz.utc) < exam_details.exam_start_dt:
-        return ServiceResult(AppException.ExaminationNotStarted({'ERROR':'Examination has not started Yet!'}))
+async def valid_exam(examination_id: int, admit_card_id: int, db, cache):
+    if admit_card_id == 1000:
+        exam_attempt = await ExamAttemptCRUD(db, cache).get_create(examination_id, admit_card_id)
+        if exam_attempt.is_submitted:
+            return ServiceResult(AppException.ExamSubmitted({'ERROR': 'Examination has already been submitted!'}))
+        return
     
-    exam_attempt =  await ExamAttemptCRUD(db, cache).get_create(examination_id, admit_card_id)
+    exam_details = await ExaminationCRUD(db, cache).get(examination_id)
+    
+    if datetime.now(pytz.utc) < exam_details.exam_start_dt:
+        return ServiceResult(AppException.ExaminationNotStarted({'ERROR': 'Examination has not started yet!'}))
+    
+    exam_attempt = await ExamAttemptCRUD(db, cache).get_create(examination_id, admit_card_id)
+    
     if exam_attempt.is_submitted:
-        return ServiceResult(AppException.ExamSubmitted({'ERROR':'Examination has already been submitted!'}))
-        
+        return ServiceResult(AppException.ExamSubmitted({'ERROR': 'Examination has already been submitted!'}))
         
