@@ -104,6 +104,7 @@ class QuestionService(AppService):
         try:
             questions_dict =  await self._get_cached_or_fetched_questions(examination_id)
             ques_id_vs_ques_attempts = await self._get_question_attempts(admit_card_id)
+            print(ques_id_vs_ques_attempts)
             merged_questions = self._merge_questions_with_attempts(questions_dict, ques_id_vs_ques_attempts)
 
             return ServiceResult(merged_questions)
