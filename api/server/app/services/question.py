@@ -105,6 +105,8 @@ class QuestionService(AppService):
             questions_dict =  await self._get_cached_or_fetched_questions(examination_id)
             ques_id_vs_ques_attempts = await self._get_question_attempts(admit_card_id)
             print(ques_id_vs_ques_attempts)
+            for abc in ques_id_vs_ques_attempts:
+                print(abc, "::",ques_id_vs_ques_attempts[abc].answer)
             merged_questions = self._merge_questions_with_attempts(questions_dict, ques_id_vs_ques_attempts)
 
             return ServiceResult(merged_questions)
@@ -132,6 +134,9 @@ class QuestionService(AppService):
         return {attempt.question_id: attempt for attempt in attempts}
 
     def _merge_questions_with_attempts(self, questions_dict, ques_id_vs_ques_attempts):
+
+        
+
         return [
             {**question, 'answer': ques_id_vs_ques_attempts[question['id']].answer 
             if question['id'] in ques_id_vs_ques_attempts else None}
