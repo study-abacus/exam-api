@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV ENVIRONMENT prod
 ENV TESTING 0
-ENV INSTALL_DEV=true
+# ENV INSTALL_DEV=true
 
 
 # Install Poetry
@@ -27,7 +27,7 @@ COPY ./server/pyproject.toml ./server/poetry.lock* /app/
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
 
-RUN bash -c "echo INSTALL_DEV=$INSTALL_DEV && if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --without dev ; fi"
+RUN bash -c "poetry install --no-root"
 
 
 COPY ./server /app
