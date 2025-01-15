@@ -161,7 +161,7 @@ class QuestionCRUD(AppCRUD):
             logger.error(f'Error upserting question: {str(e)}')
             raise AppException.RequestUpdateItem({"ERROR": f"Error upserting question: {str(e)}"})
 
-    async def get_all(self, model, skip: int = 0, limit: int = 100, filters: Optional[List[Any]] = None) -> QuestionModel:
+    async def get_all(self, model, skip: int = 0, limit: int = 200, filters: Optional[List[Any]] = None) -> QuestionModel:
         """
         Retrieve all examinations.
         """
