@@ -103,7 +103,8 @@ class QuestionService(AppService):
         """
         try:
             questions_dict =  await self._get_cached_or_fetched_questions(examination_id)
-            ques_id_vs_ques_attempts = await self._get_question_attempts(admit_card_id)
+            ques_id_vs_ques_attempts = await self._get_question_attempts(admit_card_id, 
+                                                                         list(map(lambda x: x['id'], questions_dict)))
             merged_questions = self._merge_questions_with_attempts(questions_dict, ques_id_vs_ques_attempts)
 
             return ServiceResult(merged_questions)
@@ -124,9 +125,11 @@ class QuestionService(AppService):
         self.cache.hset('examination_questions', examination_id, json.dumps(questions_dict, default=str))
         return questions_dict
 
-    async def _get_question_attempts(self, admit_card_id: int):
+    async def _get_question_attempts(self, admit_card_id: int, question_ids: List[int]):
         attempts = await QuestionAttemptCRUD(self.db).get_all(
-            filters=[QuestionAttemptModel.admit_card_id == admit_card_id]
+            filters=[QuestionAttemptModel.admit_card_id == admit_card_id,
+                     QuestionAttemptModel.question_id.in_(question_ids)
+                     ]
         )
         return {attempt.question_id: attempt for attempt in attempts}
 
